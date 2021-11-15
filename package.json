@@ -1,0 +1,56 @@
+{
+  "name": "coblog",
+  "version": "1.0.0",
+  "description": "cody's blog",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "cross-env NODE_ENV=dev nodemon app.js"
+  },
+  "keywords": [
+    "blog",
+    "koa2",
+    "nodejs",
+    "sequelize",
+    "lin-cms"
+  ],
+  "author": "",
+  "license": "ISC",
+  "_moduleAliases": {
+    "@": ".",
+    "@config": "config",
+    "@app": "app",
+    "@core": "core",
+    "@middleware": "app/middleware",
+    "@api": "app/api",
+    "@dao": "app/dao",
+    "@lib": "app/lib",
+    "@model": "app/model",
+    "@validator": "app/validator"
+  },
+  "devDependencies": {
+    "@koa/cors": "^3.1.0",
+    "basic-auth": "^2.0.1",
+    "bcryptjs": "^2.4.3",
+    "cross-env": "^7.0.3",
+    "highlight": "^0.2.4",
+    "jsonwebtoken": "^8.5.1",
+    "koa": "^2.13.4",
+    "koa-bodyparser": "^4.3.0",
+    "koa-router": "^10.1.1",
+    "koa2": "^2.0.0-alpha.7",
+    "lodash": "^4.17.21",
+    "module-alias": "^2.2.2",
+    "moment": "^2.29.1",
+    "mysql2": "^2.3.3-rc.0",
+    "nodemon": "^2.0.15",
+    "require-directory": "^2.1.1",
+    "sequelize": "^6.9.0",
+    "validator": "^13.7.0",
+    "xss": "^1.0.10"
+  },
+  "dependencies": {
+    "koa-body": "^4.2.0",
+    "koa-static": "^5.0.0"
+  }
+}
