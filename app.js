@@ -14,8 +14,7 @@ const app = new koa()
 
 app.use(cors())
 app.use(catchError())
-app.use(parser())
-app.use(koaStatic(path.join(__dirname, 'static')), { defer: true })
+app.use(koaStatic(path.join(__dirname, 'static')))
 app.use(
   koaBody({
     multipart: true,
@@ -25,6 +24,8 @@ app.use(
     }
   })
 )
+app.use(parser())
+
 InitManager.init(app)
 
 app.listen(8990, () => {

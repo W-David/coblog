@@ -26,12 +26,10 @@ router.post('/register', async (ctx) => {
       ctx.body = new SuccessModel('注册成功,已自动登录', { ...user, token })
       ctx.status = 200
     } else {
-      ctx.body = new ErrorModel(vErr.msg, err.code)
-      ctx.status = err.code
+      throw vErr
     }
   } else {
-    ctx.body = new ErrorModel(err.msg, err.code)
-    ctx.status = err.code
+    throw err
   }
 })
 
@@ -49,12 +47,10 @@ router.post('/login', async (ctx) => {
       ctx.body = new SuccessModel('登录成功', { dUser, token })
       ctx.status = 200
     } else {
-      ctx.body = new ErrorModel(dErr.msg, dErr.code)
-      ctx.status = dErr.code
+      throw dErr
     }
   } else {
-    ctx.body = new ErrorModel(err.msg, err.code)
-    ctx.status = err.code
+    throw err
   }
 })
 
@@ -66,8 +62,7 @@ router.get('/auth', new Auth(UserType.USER).auth, async (ctx) => {
     ctx.body = new SuccessModel('查询成功', user)
     ctx.status = 200
   } else {
-    ctx.body = new ErrorModel(err.msg, err.code)
-    ctx.status = err.code
+    throw err
   }
 })
 
@@ -82,8 +77,7 @@ router.get('/detail/:id', new Auth(UserType.USER).auth, async (ctx) => {
     ctx.body = new SuccessModel('查询成功', data)
     ctx.status = 200
   } else {
-    ctx.body = new ErrorModel(err.msg, err.code)
-    ctx.status = err.code
+    throw err
   }
 })
 
@@ -94,8 +88,7 @@ router.get('/list', new Auth(UserType.USER).auth, async (ctx) => {
     ctx.body = new SuccessModel('查询成功', data)
     ctx.status = 200
   } else {
-    ctx.body = new ErrorModel(err.msg, err.code)
-    ctx.status = err.code
+    throw err
   }
 })
 
@@ -109,8 +102,7 @@ router.delete('/delete/:id', new Auth(UserType.USER).auth, async (ctx) => {
     ctx.body = new SuccessModel('删除成功', res)
     ctx.status = 200
   } else {
-    ctx.body = new ErrorModel(err.msg, err.code)
-    ctx.status = err.code
+    throw err
   }
 })
 
@@ -127,8 +119,7 @@ router.put('/update/:id', new Auth(UserType.USER).auth, async (ctx) => {
     ctx.body = new SuccessModel('更新成功', data)
     ctx.status = 200
   } else {
-    ctx.body = new ErrorModel(err.msg, err.code)
-    ctx.status = err.code
+    throw err
   }
 })
 

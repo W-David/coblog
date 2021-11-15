@@ -1,38 +1,33 @@
 const moment = require('moment')
-const bcrypt = require('bcryptjs')
 const { sequelize } = require('@lib/db')
 const { DataTypes, Model } = require('sequelize')
 
-class User extends Model {}
+class File extends Model {}
 
-User.init(
+File.init(
   {
     id: {
       type: DataTypes.INTEGER(10).UNSIGNED,
       primaryKey: true,
       autoIncrement: true
     },
-    username: {
+    // articleId: {
+    //   type: DataTypes.INTEGER(10).UNSIGNED,
+    //   allowNull: false
+    // },
+    name: {
       type: DataTypes.STRING(50),
       allowNull: false
     },
-    email: {
-      type: DataTypes.STRING(50),
+    path: {
+      type: DataTypes.STRING(200),
       allowNull: false
     },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      set(val) {
-        const salt = bcrypt.genSaltSync(10)
-        const hashPw = bcrypt.hashSync(val, salt)
-        this.setDataValue('password', hashPw)
-      }
+    extension: {
+      type: DataTypes.STRING(50)
     },
-    status: {
-      type: DataTypes.TINYINT,
-      allowNull: true,
-      defaultValue: 1
+    size: {
+      type: DataTypes.INTEGER(16)
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -46,10 +41,10 @@ User.init(
   },
   {
     sequelize,
-    modelName: 'user'
+    modelName: 'file'
   }
 )
 
 module.exports = {
-  User
+  File
 }

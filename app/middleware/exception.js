@@ -18,6 +18,7 @@ const catchError = () => {
         ctx.body = new ErrorModel(error.msg, error.code)
         ctx.status = error.code
       } else {
+        //未知错误
         ctx.body = new ErrorModel(error.message, 500)
         ctx.status = 500
       }
