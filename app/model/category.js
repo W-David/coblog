@@ -2,10 +2,11 @@ const moment = require('moment')
 const { sequelize } = require('@lib/db')
 const { DataTypes, Model } = require('sequelize')
 const { Article } = require('@model/article')
+const { ArticleCategory } = require('@model/articleCategory')
 
-class File extends Model {}
+class Category extends Model {}
 
-File.init(
+Category.init(
   {
     id: {
       type: DataTypes.INTEGER(10).UNSIGNED,
@@ -13,40 +14,27 @@ File.init(
       autoIncrement: true
     },
     name: {
-      type: DataTypes.STRING(50),
+      type: DataTypes.STRING,
       allowNull: false
-    },
-    path: {
-      type: DataTypes.STRING(200),
-      allowNull: false
-    },
-    extension: {
-      type: DataTypes.STRING(50)
-    },
-    size: {
-      type: DataTypes.INTEGER(16)
     },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
       get() {
-        return moment(this.getDataValue('created_at')).format(
-          'YYYY-MM-DD HH:mm:ss'
+        return moment(
+          this.getDataValue('created_at').format('YYYY-MM-DD HH:mm:ss')
         )
       }
     }
   },
   {
     sequelize,
-    modelName: 'file'
+    modelName: 'category'
   }
 )
 
-class Banner extends File {}
-
-Banner.belongsTo(Article)
+Category.belongsToMany(Article, { through: ArticleCategory })
 
 module.exports = {
-  File,
-  Banner
+  Category
 }

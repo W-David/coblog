@@ -6,12 +6,7 @@ const { deleteFile } = require('@lib/util')
 class FileDao {
   static async create(data) {
     try {
-      // const { articleId, name, path, extension, size } = data
       const { name, path, extension, size } = data
-      // const hasArticle = await Article.findByPk(articleId)
-      // if (!hasArticle) {
-      //   throw new global.errs.NotFound('文章不存在')
-      // }
       const file = await File.create({
         // articleId,
         name,

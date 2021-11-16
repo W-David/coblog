@@ -37,7 +37,14 @@ const deleteFile = (url) => {
   })
 }
 
+const unique = (arr) => [...new Set(arr)]
+
+const isArray = (arr) =>
+  Object.prototype.toString.call(arr) === '[object Array]'
+
 module.exports = {
   generateToken,
-  deleteFile
+  deleteFile,
+  unique,
+  isArray
 }
