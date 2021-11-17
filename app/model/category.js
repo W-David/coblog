@@ -1,13 +1,8 @@
 const moment = require('moment')
-const { sequelize } = require('@lib/db')
-const { DataTypes, Model } = require('sequelize')
-const { Article } = require('@model/article')
-const { ArticleCategory } = require('@model/articleCategory')
+const { DataTypes } = require('sequelize')
 
-class Category extends Model {}
-
-Category.init(
-  {
+const generateCategory = (sequelize) =>
+  sequelize.define('category', {
     id: {
       type: DataTypes.INTEGER(10).UNSIGNED,
       primaryKey: true,
@@ -26,15 +21,6 @@ Category.init(
         )
       }
     }
-  },
-  {
-    sequelize,
-    modelName: 'category'
-  }
-)
+  })
 
-Category.belongsToMany(Article, { through: ArticleCategory })
-
-module.exports = {
-  Category
-}
+module.exports = generateCategory

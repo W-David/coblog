@@ -1,10 +1,10 @@
 const Router = require('koa-router')
-const { RegisterValidator, UserLoginValidator } = require('@validator/user')
+const { RegisterValidator, UserValidator } = require('@validator/user')
 const { PositiveIdValidator } = require('@validator/other')
 
 const UserDao = require('@dao/user')
 const Auth = require('@middleware/auth')
-const { SuccessModel, ErrorModel } = require('@lib/res')
+const { SuccessModel } = require('@lib/res')
 const { UserType } = require('@lib/type')
 const { generateToken } = require('@lib/util')
 
@@ -34,14 +34,14 @@ router.post('/register', async (ctx) => {
 })
 
 router.post('/login', async (ctx) => {
-  const v = await new UserLoginValidator().validate(ctx)
+  const v = await new UserValidator().validate(ctx)
   const email = v.get('body.email')
   const password = v.get('body.password')
 
   const [err, user] = await UserDao.verify(email, password)
   if (!err) {
     //验证用户是否已存在
-    const token = generateToken(user.id, UserType.USER)
+    const token = generateToken(user.id, UserType.ADMIN)
     const [dErr, dUser] = await UserDao.detail(user.id, 1)
     if (!dErr) {
       ctx.body = new SuccessModel('登录成功', { dUser, token })
@@ -67,14 +67,14 @@ router.get('/auth', new Auth(UserType.USER).auth, async (ctx) => {
 })
 
 //获取用户详情，需要管理员权限
-router.get('/detail/:id', new Auth(UserType.USER).auth, async (ctx) => {
+router.get('/detail/:id', new Auth(UserType.ADMIN).auth, async (ctx) => {
   const v = await new PositiveIdValidator().validate(ctx)
   const id = v.get('path.id')
 
   //根据用户Id查询所有用户信息
-  const [err, data] = await UserDao.detail(id)
+  const [err, user] = await UserDao.detail(id)
   if (!err) {
-    ctx.body = new SuccessModel('查询成功', data)
+    ctx.body = new SuccessModel('查询成功', user)
     ctx.status = 200
   } else {
     throw err
@@ -82,7 +82,7 @@ router.get('/detail/:id', new Auth(UserType.USER).auth, async (ctx) => {
 })
 
 //获取用户列表，需要管理员权限
-router.get('/list', new Auth(UserType.USER).auth, async (ctx) => {
+router.get('/list', new Auth(UserType.ADMIN).auth, async (ctx) => {
   const [err, data] = await UserDao.list(ctx.query)
   if (!err) {
     ctx.body = new SuccessModel('查询成功', data)
@@ -93,7 +93,7 @@ router.get('/list', new Auth(UserType.USER).auth, async (ctx) => {
 })
 
 //删除用户，需要管理员权限
-router.delete('/delete/:id', new Auth(UserType.USER).auth, async (ctx) => {
+router.delete('/delete/:id', new Auth(UserType.ADMIN).auth, async (ctx) => {
   const v = await new PositiveIdValidator().validate(ctx)
   const id = v.get('path.id')
 
@@ -107,14 +107,14 @@ router.delete('/delete/:id', new Auth(UserType.USER).auth, async (ctx) => {
 })
 
 //更新用户，需要管理员权限
-router.put('/update/:id', new Auth(UserType.USER).auth, async (ctx) => {
-  const v = await new PositiveIdValidator().validate(ctx)
+router.put('/update/:id', new Auth(UserType.ADMIN).auth, async (ctx) => {
+  const v = await new UserValidator().validate(ctx)
   const id = v.get('path.id')
   const email = v.get('body.email')
   const username = v.get('body.username')
   const status = v.get('body.status')
 
-  const [err, data] = await UserDao.update(id, { email, username, status })
+  const [err, data] = await UserDao.update({ id, email, username, status })
   if (!err) {
     ctx.body = new SuccessModel('更新成功', data)
     ctx.status = 200

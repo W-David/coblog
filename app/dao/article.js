@@ -1,23 +1,11 @@
 const { Op } = require('sequelize')
-const { unique, isArray } = require('@lib/util')
-const { Article } = require('@model/article')
-const { Admin } = require('@model/admin')
-const { Category } = require('@model/category')
-const { Banner } = require('@model/file')
-const { Tag } = require('@model/tag')
+const { isArray } = require('@lib/util')
+const { Article, Admin, Category, Banner, Tag } = require('@lib/db')
 
 class ArticleDao {
   static async create(data) {
     try {
-      const {
-        title,
-        description,
-        content,
-        adminId,
-        bannerId,
-        categoryIds,
-        tagIds
-      } = data
+      const { title, description, content, adminId } = data
       const hasArticle = Article.findOne({
         where: {
           title,
@@ -31,24 +19,21 @@ class ArticleDao {
       const article = await Article.create({
         title,
         description,
-        content
+        content,
+				adminId
       })
-      //新建关联项
-      const checkLis = await Promise.all([
-        ArticleDao._handleAdmin(adminId),
-        ArticleDao._handleBanner(bannerId),
-        ArticleDao._handleCategory(categoryIds),
-        ArticleDao._handleTag(tagIds)
-      ])
-      checkLis.forEach(([err, _]) => {
-        if (err) throw err
-      })
-      await Promise.all([
-        article.createAdmin(resLis[0][1]),
-        article.createBanner(resLis[1][1]),
-        article.createCategorys(resLis[2][1]),
-        article.createTags(resLis[3][1])
-      ])
+      return [null, article]
+    } catch (err) {
+      return [err, null]
+    }
+  }
+
+  static async detail() {
+    try {
+      const article = await Article.findByPk(id)
+      if (!article) {
+        throw new global.errs.NotFound('文章不存在')
+      }
       return [null, article]
     } catch (err) {
       return [err, null]
@@ -121,40 +106,16 @@ class ArticleDao {
 
   static async update(data) {
     try {
-      const {
-        id,
-        title,
-        description,
-        content,
-        adminId,
-        bannerId,
-        categoryIds,
-        tagIds
-      } = data
+      const { id, title, description, content, adminId } = data
       const article = await Article.findByPk(id)
       if (!article) {
         throw new global.errs.NotFound('文章不存在')
       }
-      article.title = title
+			e.adminId = adminId
+      e.title = title
       article.description = description
       article.content = content
 
-      //更新关联项
-      const checkLis = await Promise.all([
-        ArticleDao._handleAdmin(adminId),
-        ArticleDao._handleBanner(bannerId),
-        ArticleDao._handleCategory(categoryIds),
-        ArticleDao._handleTag(tagIds)
-      ])
-      checkLis.forEach(([err, _]) => {
-        if (err) throw err
-      })
-      await Promise.all([
-        article.setAdmin(resLis[0][1]),
-        article.setBanner(resLis[1][1]),
-        article.setCategorys(resLis[2][1]),
-        article.setTags(resLis[3][1])
-      ])
       return [null, article]
     } catch (err) {
       return [err, null]
@@ -163,52 +124,11 @@ class ArticleDao {
 
   static async list(query = {}) {
     try {
-      const { title, adminId, categoryIds, tagIds, pageNum, pageSize } = query
+      const { title, pageNum, pageSize } = query
       const filter = {}
-      let conditionId = []
       if (title) {
-        filter.title = title
-      }
-      if (adminId) {
-        const [err, admin] = await ArticleDao._handleAdmin(adminId)
-        if (err) throw err
-        if (admin) {
-          const articles = await admin.getArticles()
-          if (articles) {
-            articles.forEach((article) => conditionId.push(article.id))
-          }
-        }
-      }
-      if (categoryIds) {
-        const [err, categorys] = await ArticleDao._handleCategory(categoryIds)
-        if (err) throw err
-        if (categorys) {
-          const mp = categorys.map((category) => category.getArticles())
-          const articlesLis = await Promise.all(mp)
-          //提取一层就可以
-          const articles = articlesLis.flat()
-          if (articles) {
-            unique(articles).forEach((article) => conditionId.push(article.id))
-          }
-        }
-      }
-      if (tagIds) {
-        const [err, tags] = await ArticleDao._handleTag(tagIds)
-        if (err) throw err
-        if (tags) {
-          const mp = tags.map((tag) => tag.getArticles())
-          //同category
-          const articlesLis = await Promise.all(mp)
-          const articles = articlesLis.flat()
-          if (articles) {
-            unique(articles).forEach((article) => conditionId.push(article.id))
-          }
-        }
-      }
-      if (conditionId.length) {
-        const uniId = unique(conditionId)
-        filter.id = {
-          [Op.in]: uniId
+        filter.title = {
+          [Op.like]: `%${title}%`
         }
       }
       const condition = {
@@ -233,8 +153,7 @@ class ArticleDao {
       if (!article) {
         throw new global.errs.NotFound('文章不存在')
       }
-
-      const res = article.destory()
+      const res = article.destroy()
       return [null, res]
     } catch (err) {
       return [err, null]

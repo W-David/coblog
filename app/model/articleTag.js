@@ -1,12 +1,7 @@
-const { Article } = require('@model/article')
-const { Tag } = require('@model/tag')
-const { sequelize } = require('@lib/db')
-const { Model, DataTypes } = require('sequelize')
+const { DataTypes } = require('sequelize')
 
-class ArticleTag extends Model {}
-
-ArticleTag.init(
-  {
+const generateArticleTag = (sequelize, Article, Tag) =>
+  sequelize.define('articleTag', {
     articleId: {
       type: DataTypes.INTEGER(10).UNSIGNED,
       references: {
@@ -21,13 +16,6 @@ ArticleTag.init(
         key: 'id'
       }
     }
-  },
-  {
-    sequelize,
-    modelName: 'articleTag'
-  }
-)
+  })
 
-module.exports = {
-  ArticleTag
-}
+module.exports = generateArticleTag

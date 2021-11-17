@@ -1,13 +1,8 @@
 const moment = require('moment')
-const { sequelize } = require('@lib/db')
-const { DataTypes, Model } = require('sequelize')
-const { Article } = require('@model/article')
-const { ArticleTag } = require('@model/articleTag')
+const { DataTypes } = require('sequelize')
 
-class Tag extends Model {}
-
-Tag.init(
-  {
+const generateTag = (sequelize) =>
+  sequelize.define('tag', {
     id: {
       type: DataTypes.INTEGER(10).UNSIGNED,
       primaryKey: true,
@@ -26,15 +21,6 @@ Tag.init(
         )
       }
     }
-  },
-  {
-    sequelize,
-    modelName: 'tag'
-  }
-)
+  })
 
-Tag.belongsToMany(Article, { through: ArticleTag })
-
-module.exports = {
-  Tag
-}
+module.exports = generateTag

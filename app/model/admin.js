@@ -1,13 +1,9 @@
 const moment = require('moment')
 const bcrypt = require('bcryptjs')
-const { sequelize } = require('@lib/db')
-const { Model, DataTypes } = require('sequelize')
-const { Article } = require('@model/article')
+const { DataTypes } = require('sequelize')
 
-class Admin extends Model {}
-
-Admin.init(
-  {
+const generateAdmin = (sequelize) =>
+  sequelize.define('admin', {
     id: {
       type: DataTypes.INTEGER(10).UNSIGNED,
       primaryKey: true,
@@ -40,18 +36,6 @@ Admin.init(
         )
       }
     }
-  },
-  {
-    sequelize,
-    modelName: 'admin'
-  }
-)
+  })
 
-Admin.hasMany(Article, {
-  onUpdate: 'CASCADE',
-  onDelete: 'SET NULL'
-})
-
-module.exports = {
-  Admin
-}
+module.exports = generateAdmin

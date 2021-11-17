@@ -1,0 +1,45 @@
+{
+	"compilerOptions": {
+		"target": "ES6",
+		"module": "commonjs",
+		"allowSyntheticDefaultImports": true,
+		"baseUrl": "./",
+		"paths": {
+			"@app/*": [
+				"app/*"
+			],
+			"@config/*": [
+				"config/*"
+			],
+			"@core/*": [
+				"core/*"
+			],
+			"@middleware/*": [
+				"app/middleware/*"
+			],
+			"@api/*": [
+				"app/api/*"
+			],
+			"@dao/*": [
+				"app/dao/*"
+			],
+			"@lib/*": [
+				"app/lib/*"
+			],
+			"@model/*": [
+				"app/model/*"
+			],
+			"@validator/*": [
+				"app/validator/*"
+			]
+		}
+	},
+	"include": [
+		"app/**/*",
+		"core/**/*",
+		"config/**/*"
+	],
+	"exclude": [
+		"node_modules",
+	]
+}

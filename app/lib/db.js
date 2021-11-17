@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize')
 const { database } = require('@config/config')
 const { dbName, host, port, user, password } = database
+const initModel = require('@model/init-model')
 
 const sequelize = new Sequelize(dbName, user, password, {
   dialect: 'mysql',
@@ -23,12 +24,66 @@ const sequelize = new Sequelize(dbName, user, password, {
         attributes: {
           exclude: ['content', 'password', 'created_at', 'deleted_at']
         }
+      },
+      tb: {
+        attributes: {
+          exclude: ['deleted_at', 'updated_at']
+        }
       }
     }
   }
 })
 
-sequelize.sync({ force: true })
+const {
+  Admin,
+  Article,
+  Banner,
+  Category,
+  Tag,
+  User,
+  ArticleCategory,
+  ArticleTag,
+  Ru
+} = initModel(sequelize)
+
+//管理员和文章关联
+Admin.hasMany(Article, {
+  onUpdate: 'CASCADE',
+  onDelete: 'SET NULL'
+})
+Article.belongsTo(Admin)
+
+//文章和头图关联
+Article.hasOne(Banner, {
+  onUpdate: 'CASCADE',
+  onDelete: 'SET NULL'
+})
+Banner.belongsTo(Article)
+
+//文章和类型关联
+Article.belongsToMany(Category, {
+  through: ArticleCategory,
+  onUpdate: 'CASCADE',
+  onDelete: 'CASCADE'
+})
+Category.belongsToMany(Article, { through: ArticleCategory })
+
+//文章和标签关联
+Article.belongsToMany(Tag, {
+  through: ArticleTag,
+  onUpdate: 'CASCADE',
+  onDelete: 'CASCADE'
+})
+Tag.belongsToMany(Article, { through: ArticleTag })
+
+sequelize.sync({ force: true }).then(() =>
+  Ru.create({
+    email: 'wzh@gmail.com',
+    password: '188999',
+    created_at: Date.now()
+  })
+)
+
 sequelize
   .authenticate()
   .then((res) => {
@@ -39,5 +94,12 @@ sequelize
   })
 
 module.exports = {
-  sequelize
+  Admin,
+  Article,
+  Banner,
+  Category,
+  Tag,
+  User,
+  ArticleCategory,
+  ArticleTag
 }

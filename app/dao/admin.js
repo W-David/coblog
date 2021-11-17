@@ -1,27 +1,27 @@
 const { Op } = require('sequelize')
-const { User } = require('@lib/db')
+const { Admin } = require('@lib/db')
 const bcrypt = require('bcryptjs')
 
-class UserDao {
-  //创建用户
+class AdminDao {
+  //创建管理用户
   static async create(data) {
     try {
-      const { email, password, username } = data
-      const hasUser = await User.findOne({
+      const { email, password, nickname } = data
+      const hasAdmin = await Admin.findOne({
         where: {
           email,
           deleted_at: null
         }
       })
-      if (hasUser) {
+      if (hasAdmin) {
         throw new global.errs.Existing('用户已存在')
       }
-      const user = await User.create({
-        username,
+      const admin = await Admin.create({
+        nickname,
         email,
         password
       })
-      return [null, user]
+      return [null, admin]
     } catch (err) {
       return [err, null]
     }
@@ -30,27 +30,27 @@ class UserDao {
   //验证密码
   static async verify(email, rowPassword) {
     try {
-      const user = await User.findOne({
+      const admin = await Admin.findOne({
         where: {
           email,
           status: 1
         }
       })
 
-      if (!user) {
+      if (!admin) {
         throw new global.errs.AuthFailed('账号不存在或已被禁用')
       }
-      const correct = bcrypt.compareSync(rowPassword, user.password)
+      const correct = bcrypt.compareSync(rowPassword, admin.password)
       if (!correct) {
         throw new global.errs.AuthFailed('密码错误')
       }
-      return [null, user]
+      return [null, admin]
     } catch (err) {
       return [err, null]
     }
   }
 
-  //查询用户详情
+  //查询管理用户详情
   static async detail(id, status) {
     const scope = 'bh'
     const filter = {
@@ -60,13 +60,13 @@ class UserDao {
       filter.status = status
     }
     try {
-      const user = await User.scope(scope).findOne({
+      const admin = await Admin.scope(scope).findOne({
         where: filter
       })
-      if (!user) {
+      if (!admin) {
         throw new global.errs.AuthFailed('账号不存在或已被禁用')
       }
-      return [null, user]
+      return [null, admin]
     } catch (err) {
       return [err, null]
     }
@@ -75,46 +75,46 @@ class UserDao {
   //删除用户信息
   static async delete(id) {
     try {
-      const user = await User.findByPk(id)
-      if (!user) {
+      const admin = await Admin.findByPk(id)
+      if (!admin) {
         throw new global.errs.NotFound('未找到相关用户')
       }
 
-      const res = await user.destroy()
+      const res = await admin.destroy()
       return [null, res]
     } catch (err) {
       return [err, null]
     }
   }
 
-  //更新用户信息
+  //更新管理用户信息
   static async update(data) {
     try {
-      const { id, email, username, status } = data
-      const user = await User.findByPk(id)
-      if (!user) {
+      const { id, email, nickname, status } = data
+      const admin = await Admin.findByPk(id)
+      if (!admin) {
         throw new global.errs.NotFound('未找到相关用户')
       }
       if (email) {
-        user.email = email
+        admin.email = email
       }
-      if (username) {
-        user.username = username
+      if (nickname) {
+        admin.nickname = nickname
       }
       if (status === 0 || status === 1) {
-        user.status = status
+        admin.status = status
       }
 
-      const res = await user.save()
+      const res = await admin.save()
       return [null, res]
     } catch (err) {
       return [err, null]
     }
   }
 
-  //查询用户列表
+  //查询管理员用户列表
   static async list(query = {}) {
-    const { id, email, username, pageNum, pageSize } = query
+    const { id, email, nickname, pageNum, pageSize } = query
     const scope = 'bh'
     const filter = {}
     if (id) {
@@ -123,9 +123,9 @@ class UserDao {
     if (email) {
       filter.email = email
     }
-    if (username) {
-      filter.username = {
-        [Op.like]: `%${username}%`
+    if (nickname) {
+      filter.nickname = {
+        [Op.like]: `%${nickname}%`
       }
     }
     try {
@@ -138,12 +138,12 @@ class UserDao {
         condition.limit = pageSize
         condition.offset = (pageNum - 1) * pageSize
       }
-      const user = await User.scope(scope).findAndCountAll(condition)
-      return [null, user]
+      const admin = await Admin.scope(scope).findAndCountAll(condition)
+      return [null, admin]
     } catch (err) {
       return [err, null]
     }
   }
 }
 
-module.exports = UserDao
+module.exports = AdminDao

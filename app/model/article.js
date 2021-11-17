@@ -1,17 +1,8 @@
 const moment = require('moment')
-const { sequelize } = require('@lib/db')
-const { DataTypes, Model } = require('sequelize')
-const { Admin } = require('@model/admin')
-const { Category } = require('@model/category')
-const { Banner } = require('@model/file')
-const { Tag } = require('@model/tag')
-const { ArticleTag } = require('@model/articleTag')
-const { ArticleCategory } = require('@model/articleCategory')
+const { DataTypes } = require('sequelize')
 
-class Article extends Model {}
-
-Article.init(
-  {
+const generateArticle = (sequelize) =>
+  sequelize.define('article', {
     id: {
       type: DataTypes.INTEGER(10).UNSIGNED,
       primaryKey: true,
@@ -53,29 +44,6 @@ Article.init(
         )
       }
     }
-  },
-  {
-    sequelize,
-    modelName: 'article'
-  }
-)
+  })
 
-Article.belongsTo(Admin)
-Article.hasOne(Banner, {
-  onUpdate: 'CASCADE',
-  onDelete: 'SET NULL'
-})
-Article.belongsToMany(Category, {
-  through: ArticleCategory,
-  onUpdate: 'CASCADE',
-  onDelete: 'CASCADE'
-})
-Article.belongsToMany(Tag, {
-  through: ArticleTag,
-  onUpdate: 'CASCADE',
-  onDelete: 'CASCADE'
-})
-
-module.exports = {
-  Article
-}
+module.exports = generateArticle

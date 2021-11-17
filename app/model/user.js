@@ -1,12 +1,9 @@
 const moment = require('moment')
 const bcrypt = require('bcryptjs')
-const { sequelize } = require('@lib/db')
-const { DataTypes, Model } = require('sequelize')
+const { DataTypes } = require('sequelize')
 
-class User extends Model {}
-
-User.init(
-  {
+const generateUser = (sequelize) =>
+  sequelize.define('user', {
     id: {
       type: DataTypes.INTEGER(10).UNSIGNED,
       primaryKey: true,
@@ -43,13 +40,6 @@ User.init(
         )
       }
     }
-  },
-  {
-    sequelize,
-    modelName: 'user'
-  }
-)
+  })
 
-module.exports = {
-  User
-}
+module.exports = generateUser

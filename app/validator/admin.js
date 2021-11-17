@@ -5,8 +5,8 @@ class RegisterValidator extends LinValidator {
   constructor() {
     super()
     this.email = [new Rule('isEmail', '邮箱格式错误')]
-    this.username = [
-      new Rule('isLength', '用户名至少2个字符，之多18个字符', {
+    this.nickname = [
+      new Rule('isLength', '昵称至少2个字符，至多18个字符', {
         min: 2,
         max: 18
       })
@@ -30,7 +30,7 @@ class RegisterValidator extends LinValidator {
   }
 }
 
-class UserValidator extends PositiveIdValidator {
+class AdminValidator extends PositiveIdValidator {
   constructor() {
     super()
     this.email = [new Rule('isEmail', '请输入正确的邮箱格式')]
@@ -45,5 +45,5 @@ class UserValidator extends PositiveIdValidator {
 
 module.exports = {
   RegisterValidator,
-  UserValidator
+  AdminValidator
 }

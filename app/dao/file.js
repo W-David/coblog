@@ -1,14 +1,15 @@
 const { Op } = require('sequelize')
-const { File } = require('@model/file')
-const { Article } = require('@model/article')
+const { Banner } = require('@lib/db')
 const { deleteFile } = require('@lib/util')
+
+const File = Banner
 
 class FileDao {
   static async create(data) {
     try {
-      const { name, path, extension, size } = data
+      const { articleId, name, path, extension, size } = data
       const file = await File.create({
-        // articleId,
+        articleId,
         name,
         path,
         extension,

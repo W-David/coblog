@@ -1,28 +1,28 @@
 const moment = require('moment')
+const bcrypt = require('bcryptjs')
 const { DataTypes } = require('sequelize')
 
-const generateFile = (name, sequelize) =>
-  sequelize.define(name, {
+const generateRu = (sequelize) =>
+  sequelize.define('ru', {
     id: {
       type: DataTypes.INTEGER(10).UNSIGNED,
       primaryKey: true,
       autoIncrement: true
     },
-    name: {
+    email: {
       type: DataTypes.STRING(50),
       allowNull: false
     },
-    path: {
-      type: DataTypes.STRING(200),
-      allowNull: false
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      set(val) {
+        const salt = bcrypt.genSaltSync(10)
+        const saltPassword = bcrypt.hashSync(val, salt)
+        this.setDataValue('password', saltPassword)
+      }
     },
-    extension: {
-      type: DataTypes.STRING(50)
-    },
-    size: {
-      type: DataTypes.INTEGER(16)
-    },
-    createdAt: {
+    created_at: {
       type: DataTypes.DATE,
       allowNull: false,
       get() {
@@ -33,4 +33,4 @@ const generateFile = (name, sequelize) =>
     }
   })
 
-module.exports = generateFile
+module.exports = generateRu

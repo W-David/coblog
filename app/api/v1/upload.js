@@ -10,7 +10,7 @@ const FileDao = require('@dao/file')
 const prefix = '/api/v1/upload'
 const router = new Router({ prefix })
 
-router.post('/', async (ctx) => {
+router.post('/', new Auth(UserType.ADMIN).auth, async (ctx) => {
   const files = ctx.request.files.file
   const upType = Object.prototype.toString.call(files)
   // const v = await new PositiveIdValidator().validate(ctx)
@@ -74,7 +74,7 @@ router.get('/:id', async (ctx) => {
   }
 })
 
-router.delete('/:id', async (ctx) => {
+router.delete('/:id', new Auth(UserType.ADMIN).auth, async (ctx) => {
   const v = await new PositiveIdValidator().validate(ctx)
   const id = v.get('path.id')
 
