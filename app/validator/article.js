@@ -10,7 +10,7 @@ class ArticleValidator extends PositiveIdValidator {
     this.adminId = [new Rule('isLength', 'adminId不能为空', { min: 1 })]
     this.content = [new Rule('isLength', '文章内容不能为空', { min: 1 })]
     this.status = [
-      new Rule('isOptional'),
+      new Rule('isOptional', '', 1),
       new Rule('isIn', 'status必须为0或1', [0, 1])
     ]
     this.bannerId = [

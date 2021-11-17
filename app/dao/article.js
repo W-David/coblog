@@ -20,7 +20,7 @@ class ArticleDao {
         title,
         description,
         content,
-				adminId
+        adminId
       })
       return [null, article]
     } catch (err) {
@@ -28,7 +28,7 @@ class ArticleDao {
     }
   }
 
-  static async detail() {
+  static async detail(id) {
     try {
       const article = await Article.findByPk(id)
       if (!article) {
@@ -40,7 +40,7 @@ class ArticleDao {
     }
   }
 
-  static async _handleAdmin(adminId) {
+  static async handleAdmin(adminId) {
     try {
       if (!adminId) {
         throw new global.errs.ParameterException('缺少管理员信息')
@@ -55,7 +55,7 @@ class ArticleDao {
     }
   }
 
-  static async _handleBanner(bannerId) {
+  static async handleBanner(bannerId) {
     try {
       if (!bannerId) {
         return new Promise.resolve([null, null])
@@ -70,7 +70,7 @@ class ArticleDao {
     }
   }
 
-  static async _handleCategory(categoryIds) {
+  static async handleCategory(categoryIds) {
     try {
       if (!categoryIds || !categoryIds.length) {
         return new Promise.resolve([null, null])
@@ -81,14 +81,14 @@ class ArticleDao {
       const pmCategorys = categoryIds.map((categoryId) =>
         Category.findByPk(categoryId)
       )
-      const categorys = await Promise.all(pmCategorys)
-      return [null, categorys]
+      const categories = await Promise.all(pmCategorys)
+      return [null, categories]
     } catch (err) {
       return [err, null]
     }
   }
 
-  static async _handleTag(tagIds) {
+  static async handleTag(tagIds) {
     try {
       if (!tagIds || !categoryIds.length) {
         return new Promise.resolve([null, null])
@@ -111,7 +111,8 @@ class ArticleDao {
       if (!article) {
         throw new global.errs.NotFound('文章不存在')
       }
-			e.adminId = adminId
+
+      e.adminId = adminId
       e.title = title
       article.description = description
       article.content = content
@@ -161,6 +162,4 @@ class ArticleDao {
   }
 }
 
-module.exports = {
-  ArticleDao
-}
+module.exports = ArticleDao

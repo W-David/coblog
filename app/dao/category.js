@@ -23,7 +23,7 @@ class CategoryDao {
 
   static async bulkCreate(dataLis) {
     try {
-      const categorys = await File.bulkCreate(dataLis)
+      const categorys = await Category.bulkCreate(dataLis)
       return [null, categorys]
     } catch (err) {
       return [err, null]
