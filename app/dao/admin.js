@@ -54,10 +54,8 @@ class AdminDao {
   static async detail(id, status) {
     const scope = 'bh'
     const filter = {
-      id
-    }
-    if (status) {
-      filter.status = status
+      id,
+      status
     }
     try {
       const admin = await Admin.scope(scope).findOne({
@@ -135,8 +133,8 @@ class AdminDao {
       }
       //若存在页码参数，添加分页条件
       if (pageNum && pageSize) {
-        condition.limit = pageSize
-        condition.offset = (pageNum - 1) * pageSize
+        condition.limit = +pageSize
+        condition.offset = +((pageNum - 1) * pageSize)
       }
       const admin = await Admin.scope(scope).findAndCountAll(condition)
       return [null, admin]

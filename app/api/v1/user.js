@@ -21,8 +21,8 @@ router.post('/register', async (ctx) => {
   const [err, user] = await UserDao.create(data)
   if (!err) {
     const [vErr, vUser] = await UserDao.verify(email, password)
-    const token = generateToken(vUser.id, UserType.USER)
     if (!vErr) {
+      const token = generateToken(vUser.id, UserType.USER)
       ctx.body = new SuccessModel('注册成功,已自动登录', { ...user, token })
       ctx.status = 200
     } else {

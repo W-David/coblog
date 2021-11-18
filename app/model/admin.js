@@ -23,6 +23,11 @@ const generateAdmin = (sequelize) =>
         this.setDataValue('password', saltPassword)
       }
     },
+    status: {
+      type: DataTypes.TINYINT,
+      allowNull: false,
+      defaultValue: 1
+    },
     nickname: {
       type: DataTypes.STRING(50),
       allowNull: false

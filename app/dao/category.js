@@ -1,5 +1,5 @@
 const { Op } = require('sequelize')
-const { Category } = require('@/lib/db')
+const { Category } = require('@lib/db')
 
 class CategoryDao {
   static async create(data) {
@@ -44,19 +44,21 @@ class CategoryDao {
         order: [['created_at', 'DESC']]
       }
       if (pageNum && pageSize) {
-        condition.limit = pageSize
-        condition.offset = (pageNum - 1) * pageSize
+        condition.limit = +pageSize
+        condition.offset = +((pageNum - 1) * pageSize)
       }
       const scope = 'tb'
-      const category = await Category.scope(scope).findAndCountAll(condition)
-      return [null, category]
-    } catch (err) {}
+      const categories = await Category.scope(scope).findAndCountAll(condition)
+      return [null, categories]
+    } catch (err) {
+      return [err, null]
+    }
   }
 
   static async detail(id) {
     try {
       const category = await Category.findByPk(id)
-      if (!tag) {
+      if (!category) {
         throw new global.errs.NotFound('类别不存在')
       }
       return [null, category]
@@ -75,7 +77,8 @@ class CategoryDao {
       if (name) {
         category.name = name
       }
-      return [null, category]
+      const res = await category.save()
+      return [null, res]
     } catch (err) {
       return [err, null]
     }

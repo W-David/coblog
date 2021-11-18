@@ -17,16 +17,6 @@ class RegisterValidator extends LinValidator {
         max: 22
       })
     ]
-    this.rPassword = this.password
-  }
-
-  validatePassword(data) {
-    const password = data.body.password
-    const rPassword = data.body.rPassword
-    const isSame = password === rPassword
-    if (!isSame) {
-      throw new Error('两次输入密码不一致')
-    }
   }
 }
 

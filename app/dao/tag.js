@@ -1,5 +1,5 @@
 const { Op } = require('sequelize')
-const { Tag } = require('@/lib/db')
+const { Tag } = require('@lib/db')
 
 class TagDao {
   static async create(data) {
@@ -56,13 +56,15 @@ class TagDao {
         order: [['created_at', 'DESC']]
       }
       if (pageNum && pageSize) {
-        condition.limit = pageSize
-        condition.offset = (pageNum - 1) * pageSize
+        condition.limit = +pageSize
+        condition.offset = +((pageNum - 1) * pageSize)
       }
       const scope = 'tb'
-      const tag = await Tag.scope(scope).findAndCountAll(condition)
-      return [null, tag]
-    } catch (err) {}
+      const tags = await Tag.scope(scope).findAndCountAll(condition)
+      return [null, tags]
+    } catch (err) {
+      return [err, null]
+    }
   }
 
   static async update(data) {
@@ -75,7 +77,8 @@ class TagDao {
       if (name) {
         tag.name = name
       }
-      return [null, tag]
+      const res = await tag.save()
+      return [null, res]
     } catch (err) {
       return [err, null]
     }

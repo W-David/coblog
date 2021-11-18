@@ -14,6 +14,9 @@ const sequelize = new Sequelize(dbName, user, password, {
     timeStamps: true,
     paranoid: true,
     underscored: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    deletedAt: 'deleted_at',
     scopes: {
       bh: {
         attributes: {
@@ -76,7 +79,7 @@ Article.belongsToMany(Tag, {
 })
 Tag.belongsToMany(Article, { through: ArticleTag })
 
-sequelize.sync({ force: true }).then(() =>
+sequelize.sync().then(() =>
   Ru.create({
     email: 'wzh@gmail.com',
     password: '188999',
@@ -101,5 +104,6 @@ module.exports = {
   Tag,
   User,
   ArticleCategory,
-  ArticleTag
+  ArticleTag,
+  Ru
 }

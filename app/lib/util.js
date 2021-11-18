@@ -20,7 +20,7 @@ const generateToken = (uid, scope) => {
 }
 
 const deleteFile = (url) => {
-  return new Promise((res, rej) => {
+  return Promise((res, rej) => {
     access(url, constants.F_OK, (err) => {
       if (err) {
         rej(err)

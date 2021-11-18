@@ -32,8 +32,7 @@ class UserDao {
     try {
       const user = await User.findOne({
         where: {
-          email,
-          status: 1
+          email
         }
       })
 
@@ -135,8 +134,8 @@ class UserDao {
       }
       //若存在页码参数，添加分页条件
       if (pageNum && pageSize) {
-        condition.limit = pageSize
-        condition.offset = (pageNum - 1) * pageSize
+        condition.limit = +pageSize
+        condition.offset = +((pageNum - 1) * pageSize)
       }
       const user = await User.scope(scope).findAndCountAll(condition)
       return [null, user]

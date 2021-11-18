@@ -22,8 +22,8 @@ router.post('/register', async (ctx) => {
   const [err, admin] = await AdminDao.create(data)
   if (!err) {
     const [vErr, vAdmin] = await AdminDao.verify(email, password)
-    const token = generateToken(vAdmin.id, UserType.ADMIN)
     if (!vErr) {
+      const token = generateToken(vAdmin.id, UserType.ADMIN)
       ctx.body = new SuccessModel('注册成功,已自动登录', { ...admin, token })
       ctx.status = 200
     } else {
@@ -40,7 +40,7 @@ router.post('/login', async (ctx) => {
   const password = v.get('body.password')
 
   try {
-    const ru = await Ru.findOne({ where: email })
+    const ru = await Ru.findOne({ where: { email } })
     if (ru) {
       const token = generateToken(ru.id, UserType.SUPER_ADMIN)
       ctx.body = new SuccessModel('超级管理员您好，您已登录成功', { ru, token })
@@ -78,11 +78,11 @@ router.get('/auth', new Auth(UserType.ADMIN).auth, async (ctx) => {
 })
 
 //获取管理员用户详情，需要超级管理员权限
-router.get('/detail/:id', new Auth(UserType.SUPER_ADMIN).auth, async (ctx) => {
+router.get('/detail/:id', new Auth(UserType.ADMIN).auth, async (ctx) => {
   const v = await new PositiveIdValidator().validate(ctx)
   const id = v.get('path.id')
 
-  const [err, admin] = await AdminDao.detail(id)
+  const [err, admin] = await AdminDao.detail(id, 1)
   if (!err) {
     ctx.body = new SuccessModel('查询成功', admin)
     ctx.status = 200
