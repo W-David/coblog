@@ -1,3 +1,4 @@
+const { isNumber } = require('@lib/util')
 const { Rule, LinValidator } = require('@core/lin-validator')
 
 class PositiveIdValidator extends LinValidator {
@@ -10,6 +11,40 @@ class PositiveIdValidator extends LinValidator {
   }
 }
 
+class QueryValidator extends PositiveIdValidator {
+  constructor() {
+    super()
+    this.pageNum = [new Rule('isOptional')]
+    this.pageSize = [new Rule('isOptional')]
+  }
+
+  validatePage(vals) {
+    const { pageNum, pageSize } = vals.query
+    if (!pageNum || !pageSize) return
+    if (!isNumber(pageNum) || !isNumber(pageSize)) {
+      throw new Error('页数页码必须为数字')
+    }
+  }
+}
+
+class BodyQueryValidator extends PositiveIdValidator {
+  constructor() {
+    super()
+    this.pageNum = [new Rule('isOptional')]
+    this.pageSize = [new Rule('isOptional')]
+  }
+
+  validatePage(vals) {
+    const { pageNum, pageSize } = vals.body
+    if (!pageNum || !pageSize) return
+    if (!isNumber(pageNum) || !isNumber(pageSize)) {
+      throw new Error('页数页码必须为数字')
+    }
+  }
+}
+
 module.exports = {
-  PositiveIdValidator
+  PositiveIdValidator,
+  QueryValidator,
+  BodyQueryValidator
 }

@@ -1,5 +1,6 @@
 const { Op } = require('sequelize')
 const { Tag } = require('@lib/db')
+const { isNumber } = require('@lib/util')
 
 class TagDao {
   static async create(data) {
@@ -55,7 +56,7 @@ class TagDao {
         where: filter,
         order: [['created_at', 'DESC']]
       }
-      if (pageNum && pageSize) {
+      if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {
         condition.limit = +pageSize
         condition.offset = +((pageNum - 1) * pageSize)
       }

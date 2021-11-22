@@ -1,5 +1,6 @@
+const { isArray } = require('@lib/util')
 const { Rule, LinValidator } = require('@core/lin-validator')
-const { PositiveIdValidator } = require('./other')
+const { PositiveIdValidator, BodyQueryValidator } = require('./other')
 
 class ArticleValidator extends PositiveIdValidator {
   constructor() {
@@ -12,15 +13,39 @@ class ArticleValidator extends PositiveIdValidator {
       new Rule('isOptional', '', 1),
       new Rule('isIn', 'status必须为0或1', [0, 1])
     ]
-    this.bannerId = [
-      new Rule('isOptional', '', ''),
-      new Rule('isLength', 'bannerId不能为空', { min: 1 })
-    ]
+    this.bannerId = [new Rule('isOptional', '', '')]
     this.categoryIds = [new Rule('isOptional', '', [])]
     this.tagIds = [new Rule('isOptional', '', [])]
   }
 }
 
+class QueryArticleValidator extends BodyQueryValidator {
+  constructor() {
+    super()
+    this.title = [new Rule('isOptional')]
+    this.adminId = [new Rule('isOptional', '', '')]
+    this.categoryIds = [new Rule('isOptional', '', [])]
+    this.tagIds = [new Rule('isOptional', '', [])]
+  }
+
+  validateCategoryIds(vals) {
+    const categoryIds = vals.body.categoryIds
+    if (!categoryIds) return
+    if (!isArray(categoryIds)) {
+      throw new Error('categoryIds必须为数组')
+    }
+  }
+
+  validateTagIds(vals) {
+    const tagIds = vals.body.tagIds
+    if (!tagIds) return
+    if (!isArray(tagIds)) {
+      throw new Error('tagIds必须为数组')
+    }
+  }
+}
+
 module.exports = {
-  ArticleValidator
+  ArticleValidator,
+  QueryArticleValidator
 }

@@ -1,6 +1,7 @@
 const { Op } = require('sequelize')
 const { User } = require('@lib/db')
 const bcrypt = require('bcryptjs')
+const { isNumber } = require('@lib/util')
 
 class UserDao {
   //创建用户
@@ -133,7 +134,7 @@ class UserDao {
         order: [['created_at', 'DESC']]
       }
       //若存在页码参数，添加分页条件
-      if (pageNum && pageSize) {
+      if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {
         condition.limit = +pageSize
         condition.offset = +((pageNum - 1) * pageSize)
       }

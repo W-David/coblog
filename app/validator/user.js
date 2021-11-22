@@ -1,5 +1,5 @@
 const { Rule, LinValidator } = require('@core/lin-validator')
-const { PositiveIdValidator } = require('./other')
+const { PositiveIdValidator, QueryValidator } = require('./other')
 
 class RegisterValidator extends LinValidator {
   constructor() {
@@ -43,7 +43,16 @@ class UserValidator extends PositiveIdValidator {
   }
 }
 
+class QueryUserValidator extends QueryValidator {
+  constructor() {
+    super()
+    this.email = [new Rule('isOptional', '', '')]
+    this.username = [new Rule('isOptional', '', '')]
+  }
+}
+
 module.exports = {
   RegisterValidator,
-  UserValidator
+  UserValidator,
+  QueryUserValidator
 }

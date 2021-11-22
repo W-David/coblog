@@ -1,5 +1,9 @@
 const Router = require('koa-router')
-const { RegisterValidator, UserValidator } = require('@validator/user')
+const {
+  RegisterValidator,
+  UserValidator,
+  QueryUserValidator
+} = require('@validator/user')
 const { PositiveIdValidator } = require('@validator/other')
 
 const UserDao = require('@dao/user')
@@ -83,7 +87,9 @@ router.get('/detail/:id', new Auth(UserType.ADMIN).auth, async (ctx) => {
 
 //获取用户列表，需要管理员权限
 router.get('/list', new Auth(UserType.ADMIN).auth, async (ctx) => {
-  const [err, data] = await UserDao.list(ctx.query)
+  const v = await new QueryUserValidator().validate(ctx)
+  const query = v.get('query')
+  const [err, data] = await UserDao.list(query)
   if (!err) {
     ctx.body = new SuccessModel('查询成功', data)
     ctx.status = 200

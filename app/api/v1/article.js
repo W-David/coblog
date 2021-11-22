@@ -1,5 +1,8 @@
 const Router = require('koa-router')
-const { ArticleValidator } = require('@validator/article')
+const {
+  ArticleValidator,
+  QueryArticleValidator
+} = require('@validator/article')
 const { PositiveIdValidator } = require('@validator/other')
 
 const ArticleDao = require('@dao/article')
@@ -81,8 +84,10 @@ router.put('/update/:id', new Auth(UserType.ADMIN).auth, async (ctx) => {
   }
 })
 
-router.get('/list', async (ctx) => {
-  const [err, articles] = await ArticleDao.list(ctx.query)
+router.post('/list', async (ctx) => {
+  const v = await new QueryArticleValidator().validate(ctx)
+  const body = v.get('body')
+  const [err, articles] = await ArticleDao.list(body)
   if (!err) {
     ctx.body = new SuccessModel('查询成功', articles)
   } else {

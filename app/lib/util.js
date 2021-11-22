@@ -20,7 +20,7 @@ const generateToken = (uid, scope) => {
 }
 
 const deleteFile = (url) => {
-  return Promise((res, rej) => {
+  return new Promise((res, rej) => {
     access(url, constants.F_OK, (err) => {
       if (err) {
         rej(err)
@@ -42,9 +42,12 @@ const unique = (arr) => [...new Set(arr)]
 const isArray = (arr) =>
   Object.prototype.toString.call(arr) === '[object Array]'
 
+const isNumber = (str) => !isNaN(Number(str))
+
 module.exports = {
   generateToken,
   deleteFile,
   unique,
-  isArray
+  isArray,
+  isNumber
 }

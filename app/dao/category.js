@@ -1,4 +1,5 @@
 const { Op } = require('sequelize')
+const { isNumber } = require('@lib/util')
 const { Category } = require('@lib/db')
 
 class CategoryDao {
@@ -43,7 +44,7 @@ class CategoryDao {
         where: filter,
         order: [['created_at', 'DESC']]
       }
-      if (pageNum && pageSize) {
+      if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {
         condition.limit = +pageSize
         condition.offset = +((pageNum - 1) * pageSize)
       }

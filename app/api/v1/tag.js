@@ -1,5 +1,9 @@
 const Router = require('koa-router')
-const { TagValidator, TagsValidator } = require('@validator/tag')
+const {
+  TagValidator,
+  TagsValidator,
+  QueryTagValidator
+} = require('@validator/tag')
 const { PositiveIdValidator } = require('@validator/other')
 
 const TagDao = require('@dao/tag')
@@ -47,7 +51,9 @@ router.get('/detail/:id', new Auth(UserType.ADMIN).auth, async (ctx) => {
 })
 
 router.get('/list', async (ctx) => {
-  const [err, tags] = await TagDao.list(ctx.query)
+  const v = await new QueryTagValidator.validate(ctx)
+  const query = v.get('query')
+  const [err, tags] = await TagDao.list(query)
   if (!err) {
     ctx.body = new SuccessModel('查询成功', tags)
     ctx.status = 200

@@ -1,15 +1,6 @@
 const { Op } = require('sequelize')
-const { isArray, unique } = require('@lib/util')
-const {
-  Article,
-  Admin,
-  Category,
-  Banner,
-  Tag,
-  ArticleCategory,
-  ArticleTag
-} = require('@lib/db')
-const FileDao = require('./file')
+const { isArray, unique, isNumber } = require('@lib/util')
+const { Article, Admin, Category, Banner, Tag } = require('@lib/db')
 
 class ArticleDao {
   static async create(data) {
@@ -128,7 +119,7 @@ class ArticleDao {
         Category.findByPk(categoryId)
       )
       const categories = await Promise.all(pmCategorys)
-      return [null, categories]
+      return [null, categories.filter((category) => !!category)]
     } catch (err) {
       return [err, null]
     }
@@ -144,7 +135,7 @@ class ArticleDao {
       }
       const pmTags = tagIds.map((tagId) => Tag.findByPk(tagId))
       const tags = await Promise.all(pmTags)
-      return [null, tags]
+      return [null, tags.filter((tag) => !!tag)]
     } catch (err) {
       return [err, null]
     }
@@ -195,12 +186,12 @@ class ArticleDao {
     }
   }
 
-  static async list(query = {}) {
+  static async list(body = {}) {
     try {
       const { id, title, pageNum, pageSize, adminId, categoryIds, tagIds } =
-        query
+        body
       const filter = {}
-      let pmLis = []
+      const include = [Banner, Admin]
       if (id) {
         filter.id = id
       }
@@ -213,52 +204,33 @@ class ArticleDao {
         filter.adminId = adminId
       }
       if (categoryIds && isArray(categoryIds) && categoryIds.length) {
-        pmLis.push(
-          ArticleCategory.findAll({
-            where: {
-              categroyId: {
-                [Op.in]: unique(categoryIds)
-              }
+        include.push({
+          model: Category,
+          through: { attributes: [] },
+          where: {
+            id: {
+              [Op.in]: categoryIds
             }
-          })
-        )
+          }
+        })
       }
       if (tagIds && isArray(tagIds) && tagIds.length) {
-        pmLis.push(
-          ArticleTag.findAll({
-            where: {
-              tagId: {
-                [Op.in]: unique(tagIds)
-              }
+        include.push({
+          model: Tag,
+          through: { attributes: [] },
+          where: {
+            id: {
+              [Op.in]: tagIds
             }
-          })
-        )
-      }
-      const resLis = await Promise.all(pmLis)
-      const conditionIds =
-        unique(resLis.flat().map((res) => res.articleId)) || []
-      if (conditionIds.length) {
-        filter.id = {
-          [Op.in]: conditionIds
-        }
+          }
+        })
       }
       const condition = {
         where: filter,
-        order: [['created_at', 'DESC']],
-        include: [
-          Banner,
-          Admin,
-          {
-            model: Category,
-            through: { attributes: [] }
-          },
-          {
-            model: Tag,
-            through: { attributes: [] }
-          }
-        ]
+        include,
+        order: [['created_at', 'DESC']]
       }
-      if (pageNum && pageSize) {
+      if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {
         condition.limit = +pageSize
         condition.offset = +((pageNum - 1) * pageSize)
       }
@@ -276,8 +248,6 @@ class ArticleDao {
       if (!article) {
         throw new global.errs.NotFound('文章不存在')
       }
-      const [err, _] = await FileDao.delete(article.bannerId)
-      if (err) throw err
       const res = await article.destroy()
       return [null, res]
     } catch (err) {

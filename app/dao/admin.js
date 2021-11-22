@@ -1,5 +1,6 @@
 const { Op } = require('sequelize')
 const { Admin } = require('@lib/db')
+const { isNumber } = require('@lib/util')
 const bcrypt = require('bcryptjs')
 
 class AdminDao {
@@ -132,7 +133,7 @@ class AdminDao {
         order: [['created_at', 'DESC']]
       }
       //若存在页码参数，添加分页条件
-      if (pageNum && pageSize) {
+      if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {
         condition.limit = +pageSize
         condition.offset = +((pageNum - 1) * pageSize)
       }

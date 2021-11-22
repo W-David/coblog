@@ -1,7 +1,8 @@
 const Router = require('koa-router')
 const {
   CategoryValidator,
-  CategoriesValidator
+  CategoriesValidator,
+  QueryCategoryValidator
 } = require('@validator/category')
 const { PositiveIdValidator } = require('@validator/other')
 
@@ -50,7 +51,9 @@ router.get('/detail/:id', async (ctx) => {
 })
 
 router.get('/list', async (ctx) => {
-  const [err, categories] = await CategoryDao.list(ctx.query)
+  const v = await new QueryCategoryValidator().validate(ctx)
+  const query = v.get('query')
+  const [err, categories] = await CategoryDao.list(query)
   if (!err) {
     ctx.body = new SuccessModel('查询成功', categories)
     ctx.status = 200
