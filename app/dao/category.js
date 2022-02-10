@@ -1,6 +1,6 @@
 const { Op } = require('sequelize')
-const { isNumber } = require('@lib/util')
-const { Category } = require('@lib/db')
+const { isNumber, isArray } = require('@lib/util')
+const { Category, Article } = require('@lib/db')
 
 class CategoryDao {
   static async create(data) {
@@ -56,11 +56,62 @@ class CategoryDao {
     }
   }
 
+  //条件查询分类及其关联文章信息
+  static async queryListArticles(query = {}) {
+    try {
+      const { ids, pageNum, pageSize } = query
+      const filter = {}
+      if (ids && isArray(ids) && ids.length) {
+        filter.id = {
+          [Op.in]: ids
+        }
+      }
+      const condition = {
+        where: filter,
+        include: [
+          {
+            model: Article,
+            through: { attributes: [] }
+          }
+        ],
+        order: [['created_at', 'DESC']]
+      }
+      if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {
+        condition.limit = +pageSize
+        condition.offset = +((pageNum - 1) * pageSize)
+      }
+      const categories = await Category.findAndCountAll(condition)
+      return [null, categories]
+    } catch (err) {
+      return [err, null]
+    }
+  }
+
   static async detail(id) {
     try {
       const category = await Category.findByPk(id)
       if (!category) {
         throw new global.errs.NotFound('类别不存在')
+      }
+      return [null, category]
+    } catch (err) {
+      return [err, null]
+    }
+  }
+
+  // 查询某个分类及其关联文章的信息
+  static async queryDetailArticles(id) {
+    try {
+      const category = await Category.findByPk(id, {
+        include: [
+          {
+            model: Article,
+            through: { attributes: [] }
+          }
+        ]
+      })
+      if (!category) {
+        throw new global.errs.NotFound('分类不存在')
       }
       return [null, category]
     } catch (err) {

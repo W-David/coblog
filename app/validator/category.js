@@ -18,6 +18,7 @@ class CategoriesValidator extends LinValidator {
 class QueryCategoryValidator extends QueryValidator {
   constructor() {
     super()
+    this.ids = [new Rule('isOptional', '', [])]
     this.name = [new Rule('isOptional', '', '')]
   }
 }

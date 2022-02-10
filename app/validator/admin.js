@@ -23,8 +23,9 @@ class RegisterValidator extends LinValidator {
 class AdminValidator extends PositiveIdValidator {
   constructor() {
     super()
-    this.email = [new Rule('isEmail', '请输入正确的邮箱格式')]
+    this.email = [new Rule('isLength', '邮箱不能为空字符', { min: 1 }), new Rule('isEmail', '请输入正确的邮箱格式')]
     this.password = [
+      new Rule('isOptional'),
       new Rule('isLength', '密码至少6个字符，至多22个字符', {
         min: 6,
         max: 22

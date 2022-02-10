@@ -2,7 +2,7 @@ const moment = require('moment')
 const bcrypt = require('bcryptjs')
 const { DataTypes } = require('sequelize')
 
-const generateAdmin = (sequelize) =>
+const generateAdmin = sequelize =>
   sequelize.define('admin', {
     id: {
       type: DataTypes.INTEGER(10).UNSIGNED,
@@ -23,6 +23,11 @@ const generateAdmin = (sequelize) =>
         this.setDataValue('password', saltPassword)
       }
     },
+    avatar: {
+      type: DataTypes.STRING(200),
+      allowNull: true,
+      defaultValue: ''
+    },
     status: {
       type: DataTypes.TINYINT,
       allowNull: false,
@@ -36,9 +41,7 @@ const generateAdmin = (sequelize) =>
       type: DataTypes.DATE,
       allowNull: false,
       get() {
-        return moment(this.getDataValue('created_at')).format(
-          'YYYY-MM-DD HH:mm:ss'
-        )
+        return moment(this.getDataValue('created_at')).format('YYYY-MM-DD HH:mm:ss')
       }
     }
   })

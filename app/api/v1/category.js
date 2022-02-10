@@ -1,9 +1,5 @@
 const Router = require('koa-router')
-const {
-  CategoryValidator,
-  CategoriesValidator,
-  QueryCategoryValidator
-} = require('@validator/category')
+const { CategoryValidator, CategoriesValidator, QueryCategoryValidator } = require('@validator/category')
 const { PositiveIdValidator } = require('@validator/other')
 
 const CategoryDao = require('@dao/category')
@@ -14,7 +10,7 @@ const { SuccessModel } = require('@lib/res')
 const prefix = '/api/v1/category'
 const router = new Router({ prefix })
 
-router.post('/create', new Auth(UserType.ADMIN).auth, async (ctx) => {
+router.post('/create', new Auth(UserType.ADMIN).auth, async ctx => {
   const v = await new CategoryValidator().validate(ctx)
   const name = v.get('body.name')
   const [err, category] = await CategoryDao.create({ name })
@@ -26,7 +22,7 @@ router.post('/create', new Auth(UserType.ADMIN).auth, async (ctx) => {
   }
 })
 
-router.post('/bulk', new Auth(UserType.ADMIN).auth, async (ctx) => {
+router.post('/bulk', new Auth(UserType.ADMIN).auth, async ctx => {
   const v = await new CategoriesValidator().validate(ctx)
   const dataLis = v.get('body.dataLis')
   const [err, categories] = await CategoryDao.bulkCreate(dataLis)
@@ -38,7 +34,7 @@ router.post('/bulk', new Auth(UserType.ADMIN).auth, async (ctx) => {
   }
 })
 
-router.get('/detail/:id', async (ctx) => {
+router.get('/detail/:id', async ctx => {
   const v = await new PositiveIdValidator().validate(ctx)
   const id = v.get('path.id')
   const [err, category] = await CategoryDao.detail(id)
@@ -50,7 +46,19 @@ router.get('/detail/:id', async (ctx) => {
   }
 })
 
-router.get('/list', async (ctx) => {
+router.get('/detail/articles/:id', async ctx => {
+  const v = await new PositiveIdValidator().validate(ctx)
+  const id = v.get('path.id')
+  const [err, category] = await CategoryDao.queryDetailArticles(id)
+  if (!err) {
+    ctx.body = new SuccessModel('查询成功', category)
+    ctx.status = 200
+  } else {
+    throw err
+  }
+})
+
+router.get('/list', async ctx => {
   const v = await new QueryCategoryValidator().validate(ctx)
   const query = v.get('query')
   const [err, categories] = await CategoryDao.list(query)
@@ -62,7 +70,19 @@ router.get('/list', async (ctx) => {
   }
 })
 
-router.put('/update/:id', new Auth(UserType.ADMIN).auth, async (ctx) => {
+router.get('/list/articles', async ctx => {
+  const v = await new QueryCategoryValidator().validate(ctx)
+  const query = v.get('query')
+  const [err, categories] = await CategoryDao.queryListArticles(query)
+  if (!err) {
+    ctx.body = new SuccessModel('查询成功', categories)
+    ctx.status = 200
+  } else {
+    throw err
+  }
+})
+
+router.put('/update/:id', new Auth(UserType.ADMIN).auth, async ctx => {
   const v = await new CategoryValidator().validate(ctx)
   const id = v.get('path.id')
   const name = v.get('body.name')
@@ -76,7 +96,7 @@ router.put('/update/:id', new Auth(UserType.ADMIN).auth, async (ctx) => {
   }
 })
 
-router.delete('/delete/:id', new Auth(UserType.ADMIN).auth, async (ctx) => {
+router.delete('/delete/:id', new Auth(UserType.ADMIN).auth, async ctx => {
   const v = await new PositiveIdValidator().validate(ctx)
   const id = v.get('path.id')
 

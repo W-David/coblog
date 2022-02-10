@@ -2,7 +2,7 @@ const moment = require('moment')
 const bcrypt = require('bcryptjs')
 const { DataTypes } = require('sequelize')
 
-const generateUser = (sequelize) =>
+const generateUser = sequelize =>
   sequelize.define('user', {
     id: {
       type: DataTypes.INTEGER(10).UNSIGNED,
@@ -16,6 +16,11 @@ const generateUser = (sequelize) =>
     email: {
       type: DataTypes.STRING(50),
       allowNull: false
+    },
+    avatar: {
+      type: DataTypes.STRING(200),
+      allowNull: true,
+      defaultValue: ''
     },
     password: {
       type: DataTypes.STRING,
@@ -34,9 +39,7 @@ const generateUser = (sequelize) =>
     createdAt: {
       type: DataTypes.DATE,
       get() {
-        return moment(this.getDataValue('created_at')).format(
-          'YYYY-MM-DD HH:mm:ss'
-        )
+        return moment(this.getDataValue('created_at')).format('YYYY-MM-DD HH:mm:ss')
       }
     }
   })

@@ -7,8 +7,9 @@ class UserDao {
   //创建用户
   static async create(data) {
     try {
+      const scope = 'bh'
       const { email, password, username } = data
-      const hasUser = await User.findOne({
+      const hasUser = await User.scope(scope).findOne({
         where: {
           email,
           deleted_at: null
@@ -31,12 +32,12 @@ class UserDao {
   //验证密码
   static async verify(email, rowPassword) {
     try {
-      const user = await User.findOne({
+      const scope = 'bh'
+      const user = await User.scope(scope).findOne({
         where: {
           email
         }
       })
-
       if (!user) {
         throw new global.errs.AuthFailed('账号不存在或已被禁用')
       }
@@ -75,11 +76,11 @@ class UserDao {
   //删除用户信息
   static async delete(id) {
     try {
-      const user = await User.findByPk(id)
+      const scope = 'bh'
+      const user = await User.scope(scope).findByPk(id)
       if (!user) {
         throw new global.errs.NotFound('未找到相关用户')
       }
-
       const res = await user.destroy()
       return [null, res]
     } catch (err) {
@@ -90,8 +91,9 @@ class UserDao {
   //更新用户信息
   static async update(data) {
     try {
-      const { id, email, username, status } = data
-      const user = await User.findByPk(id)
+      const scope = 'bh'
+      const { id, email, username, status, avatar } = data
+      const user = await User.scope(scope).findByPk(id)
       if (!user) {
         throw new global.errs.NotFound('未找到相关用户')
       }
@@ -104,7 +106,7 @@ class UserDao {
       if (status === 0 || status === 1) {
         user.status = status
       }
-
+      user.avatar = avatar || ''
       const res = await user.save()
       return [null, res]
     } catch (err) {

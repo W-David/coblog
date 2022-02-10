@@ -7,8 +7,9 @@ class AdminDao {
   //创建管理用户
   static async create(data) {
     try {
+      const scope = 'bh'
       const { email, password, nickname } = data
-      const hasAdmin = await Admin.findOne({
+      const hasAdmin = await Admin.scope(scope).findOne({
         where: {
           email,
           deleted_at: null
@@ -31,7 +32,8 @@ class AdminDao {
   //验证密码
   static async verify(email, rowPassword) {
     try {
-      const admin = await Admin.findOne({
+      const scope = 'bh'
+      const admin = await Admin.scope(scope).findOne({
         where: {
           email,
           status: 1
@@ -74,7 +76,8 @@ class AdminDao {
   //删除用户信息
   static async delete(id) {
     try {
-      const admin = await Admin.findByPk(id)
+      const scope = 'bh'
+      const admin = await Admin.scope(scope).findByPk(id)
       if (!admin) {
         throw new global.errs.NotFound('未找到相关用户')
       }
@@ -89,8 +92,9 @@ class AdminDao {
   //更新管理用户信息
   static async update(data) {
     try {
-      const { id, email, nickname, status } = data
-      const admin = await Admin.findByPk(id)
+      const scope = 'bh'
+      const { id, email, nickname, status, avatar } = data
+      const admin = await Admin.scope(scope).findByPk(id)
       if (!admin) {
         throw new global.errs.NotFound('未找到相关用户')
       }
@@ -103,7 +107,7 @@ class AdminDao {
       if (status === 0 || status === 1) {
         admin.status = status
       }
-
+      admin.avatar = avatar || ''
       const res = await admin.save()
       return [null, res]
     } catch (err) {

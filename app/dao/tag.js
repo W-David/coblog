@@ -1,6 +1,6 @@
 const { Op } = require('sequelize')
-const { Tag } = require('@lib/db')
-const { isNumber } = require('@lib/util')
+const { Tag, Article } = require('@lib/db')
+const { isNumber, isArray } = require('@lib/util')
 
 class TagDao {
   static async create(data) {
@@ -24,8 +24,8 @@ class TagDao {
 
   static async bulkCreate(dataLis) {
     try {
-      const categorys = await Tag.bulkCreate(dataLis)
-      return [null, categorys]
+      const tags = await Tag.bulkCreate(dataLis)
+      return [null, tags]
     } catch (err) {
       return [err, null]
     }
@@ -35,7 +35,27 @@ class TagDao {
     try {
       const tag = await Tag.findByPk(id)
       if (!tag) {
-        throw new global.errs.NotFound('类别不存在')
+        throw new global.errs.NotFound('标签不存在')
+      }
+      return [null, tag]
+    } catch (err) {
+      return [err, null]
+    }
+  }
+
+  // 查询某个标签及其关联文章的信息
+  static async queryDetailArticles(id) {
+    try {
+      const tag = await Tag.findByPk(id, {
+        include: [
+          {
+            model: Article,
+            through: { attributes: [] }
+          }
+        ]
+      })
+      if (!tag) {
+        throw new global.errs.NotFound('标签不存在')
       }
       return [null, tag]
     } catch (err) {
@@ -68,12 +88,43 @@ class TagDao {
     }
   }
 
+  //条件查询标签及其关联文章信息
+  static async queryListArticles(query = {}) {
+    try {
+      const { ids, pageNum, pageSize } = query
+      const filter = {}
+      if (ids && isArray(ids) && ids.length) {
+        filter.id = {
+          [Op.in]: ids
+        }
+      }
+      const condition = {
+        where: filter,
+        include: [
+          {
+            model: Article,
+            through: { attributes: [] }
+          }
+        ],
+        order: [['created_at', 'DESC']]
+      }
+      if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {
+        condition.limit = +pageSize
+        condition.offset = +((pageNum - 1) * pageSize)
+      }
+      const tags = await Tag.findAndCountAll(condition)
+      return [null, tags]
+    } catch (err) {
+      return [err, null]
+    }
+  }
+
   static async update(data) {
     try {
       const { id, name } = data
       const tag = await Tag.findByPk(id)
       if (!tag) {
-        throw new global.errs.NotFound('类别不存在')
+        throw new global.errs.NotFound('标签不存在')
       }
       if (name) {
         tag.name = name
@@ -89,7 +140,7 @@ class TagDao {
     try {
       const tag = await Tag.findByPk(id)
       if (!tag) {
-        throw new global.errs.NotFound('类别不存在')
+        throw new global.errs.NotFound('标签不存在')
       }
       const res = await tag.destroy()
       return [null, res]

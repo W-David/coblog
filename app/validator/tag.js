@@ -18,6 +18,7 @@ class TagsValidator extends LinValidator {
 class QueryTagValidator extends QueryValidator {
   constructor() {
     super()
+    this.ids = [new Rule('isOptional', '', [])]
     this.name = [new Rule('isOptional', '', '')]
   }
 }

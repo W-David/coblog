@@ -1,9 +1,5 @@
 const Router = require('koa-router')
-const {
-  TagValidator,
-  TagsValidator,
-  QueryTagValidator
-} = require('@validator/tag')
+const { TagValidator, TagsValidator, QueryTagValidator } = require('@validator/tag')
 const { PositiveIdValidator } = require('@validator/other')
 
 const TagDao = require('@dao/tag')
@@ -14,7 +10,7 @@ const { SuccessModel } = require('@lib/res')
 const prefix = '/api/v1/tag'
 const router = new Router({ prefix })
 
-router.post('/create', new Auth(UserType.ADMIN).auth, async (ctx) => {
+router.post('/create', new Auth(UserType.ADMIN).auth, async ctx => {
   const v = await new TagValidator().validate(ctx)
   const name = v.get('body.name')
   const [err, tag] = await TagDao.create({ name })
@@ -26,7 +22,7 @@ router.post('/create', new Auth(UserType.ADMIN).auth, async (ctx) => {
   }
 })
 
-router.post('/bulk', new Auth(UserType.ADMIN).auth, async (ctx) => {
+router.post('/bulk', new Auth(UserType.ADMIN).auth, async ctx => {
   const v = await new TagsValidator().validate(ctx)
   const dataLis = v.get('body.dataLis')
   const [err, tags] = await TagDao.bulkCreate(dataLis)
@@ -38,7 +34,7 @@ router.post('/bulk', new Auth(UserType.ADMIN).auth, async (ctx) => {
   }
 })
 
-router.get('/detail/:id', new Auth(UserType.ADMIN).auth, async (ctx) => {
+router.get('/detail/:id', async ctx => {
   const v = await new PositiveIdValidator().validate(ctx)
   const id = v.get('path.id')
   const [err, tag] = await TagDao.detail(id)
@@ -50,8 +46,20 @@ router.get('/detail/:id', new Auth(UserType.ADMIN).auth, async (ctx) => {
   }
 })
 
-router.get('/list', async (ctx) => {
-  const v = await new QueryTagValidator.validate(ctx)
+router.get('/detail/articles/:id', async ctx => {
+  const v = await new PositiveIdValidator().validate(ctx)
+  const id = v.get('path.id')
+  const [err, tag] = await TagDao.queryDetailArticles(id)
+  if (!err) {
+    ctx.body = new SuccessModel('查询成功', tag)
+    ctx.status = 200
+  } else {
+    throw err
+  }
+})
+
+router.get('/list', async ctx => {
+  const v = await new QueryTagValidator().validate(ctx)
   const query = v.get('query')
   const [err, tags] = await TagDao.list(query)
   if (!err) {
@@ -62,7 +70,19 @@ router.get('/list', async (ctx) => {
   }
 })
 
-router.put('/update/:id', new Auth(UserType.ADMIN).auth, async (ctx) => {
+router.get('/list/articles', async ctx => {
+  const v = await new QueryTagValidator().validate(ctx)
+  const query = v.get('query')
+  const [err, tags] = await TagDao.queryListArticles(query)
+  if (!err) {
+    ctx.body = new SuccessModel('查询成功', tags)
+    ctx.status = 200
+  } else {
+    throw err
+  }
+})
+
+router.put('/update/:id', new Auth(UserType.ADMIN).auth, async ctx => {
   const v = await new TagValidator().validate(ctx)
   const id = v.get('path.id')
   const name = v.get('body.name')
@@ -76,7 +96,7 @@ router.put('/update/:id', new Auth(UserType.ADMIN).auth, async (ctx) => {
   }
 })
 
-router.delete('/delete/:id', async (ctx) => {
+router.delete('/delete/:id', async ctx => {
   const v = await new PositiveIdValidator().validate(ctx)
   const id = v.get('path.id')
 

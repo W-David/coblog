@@ -5,15 +5,7 @@ const { Article, Admin, Category, Banner, Tag } = require('@lib/db')
 class ArticleDao {
   static async create(data) {
     try {
-      const {
-        title,
-        description,
-        content,
-        adminId,
-        bannerId,
-        categoryIds,
-        tagIds
-      } = data
+      const { title, description, content, adminId, bannerId, categoryIds, tagIds } = data
       const hasArticle = await Article.findOne({
         where: {
           title,
@@ -41,11 +33,7 @@ class ArticleDao {
         if (err) throw err
       })
       const [banner, categoris, tags] = resLis.map(([_, res]) => res)
-      await Promise.all([
-        article.setBanner(banner),
-        article.setCategories(categoris),
-        article.setTags(tags)
-      ])
+      await Promise.all([article.setBanner(banner), article.setCategories(categoris), article.setTags(tags)])
       return [null, article]
     } catch (err) {
       return [err, null]
@@ -115,11 +103,9 @@ class ArticleDao {
       if (!isArray(categoryIds)) {
         throw new global.errs.ParameterException('categroyIds必须为数组')
       }
-      const pmCategorys = categoryIds.map((categoryId) =>
-        Category.findByPk(categoryId)
-      )
+      const pmCategorys = categoryIds.map(categoryId => Category.findByPk(categoryId))
       const categories = await Promise.all(pmCategorys)
-      return [null, categories.filter((category) => !!category)]
+      return [null, categories.filter(category => !!category)]
     } catch (err) {
       return [err, null]
     }
@@ -133,9 +119,9 @@ class ArticleDao {
       if (!isArray(tagIds)) {
         throw new global.errs.ParameterException('tagIds必须为数组')
       }
-      const pmTags = tagIds.map((tagId) => Tag.findByPk(tagId))
+      const pmTags = tagIds.map(tagId => Tag.findByPk(tagId))
       const tags = await Promise.all(pmTags)
-      return [null, tags.filter((tag) => !!tag)]
+      return [null, tags.filter(tag => !!tag)]
     } catch (err) {
       return [err, null]
     }
@@ -143,16 +129,7 @@ class ArticleDao {
 
   static async update(data) {
     try {
-      const {
-        id,
-        title,
-        description,
-        content,
-        adminId,
-        bannerId,
-        categoryIds,
-        tagIds
-      } = data
+      const { id, title, description, content, adminId, bannerId, categoryIds, tagIds } = data
       const article = await Article.findByPk(id)
       if (!article) {
         throw new global.errs.NotFound('文章不存在')
@@ -174,11 +151,7 @@ class ArticleDao {
         if (err) throw err
       })
       const [banner, categoris, tags] = resLis.map(([_, res]) => res)
-      await Promise.all([
-        article.setBanner(banner),
-        article.setCategories(categoris),
-        article.setTags(tags)
-      ])
+      await Promise.all([article.setBanner(banner), article.setCategories(categoris), article.setTags(tags)])
       const res = await article.save()
       return [null, res]
     } catch (err) {
@@ -188,8 +161,7 @@ class ArticleDao {
 
   static async list(body = {}) {
     try {
-      const { id, title, pageNum, pageSize, adminId, categoryIds, tagIds } =
-        body
+      const { id, title, pageNum, pageSize, adminId, categoryIds, tagIds } = body
       const filter = {}
       const include = [Banner, Admin]
       if (id) {

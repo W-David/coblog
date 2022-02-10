@@ -13,10 +13,10 @@ const catchError = () => {
         throw error
       }
 
-      // 可处理的错误返回错误信息
       if (isHttpException) {
+        // 可处理的错误返回错误信息
         ctx.body = new ErrorModel(error.msg, error.code)
-        ctx.status = error.code
+        ctx.status = 200
       } else {
         //未知错误
         ctx.body = new ErrorModel(error.message, 500)
