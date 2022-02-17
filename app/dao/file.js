@@ -7,9 +7,8 @@ const File = Banner
 class FileDao {
   static async create(data) {
     try {
-      const { articleId, name, path, extension, size } = data
+      const { name, path, extension, size } = data
       const file = await File.create({
-        articleId,
         name,
         path,
         extension,
@@ -49,11 +48,11 @@ class FileDao {
         throw new global.errs.NotFound('未找到文件记录')
       }
       const res = await file.destroy()
-      try {
-        await deleteFile(`${process.cwd()}/static/uploads/${res.name}`)
-      } catch (err) {
-        throw err
-      }
+      // try {
+      //   await deleteFile(`${process.cwd()}/static/uploads/${res.name}`)
+      // } catch (err) {
+      //   throw err
+      // }
       return [null, res]
     } catch (err) {
       return [err, null]

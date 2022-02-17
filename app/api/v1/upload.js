@@ -1,5 +1,6 @@
 const Router = require('koa-router')
 const { PositiveIdValidator } = require('@validator/other')
+const { FileValidator } = require('@validator/file')
 const path = require('path')
 
 const Auth = require('@middleware/auth')
@@ -10,17 +11,14 @@ const FileDao = require('@dao/file')
 const prefix = '/api/v1/upload'
 const router = new Router({ prefix })
 
-router.post('/', new Auth(UserType.ADMIN).auth, async (ctx) => {
+router.post('/', new Auth(UserType.ADMIN).auth, async ctx => {
   const files = ctx.request.files.file
   const upType = Object.prototype.toString.call(files)
-  // const v = await new PositiveIdValidator().validate(ctx)
-  // const articleId = v.get('body.articleId')
   let arr = []
   if (upType === '[object Object]') {
     if (files.size) {
       const basename = path.basename(files.path)
       const [err, savedFile] = await FileDao.create({
-        // articleId,
         name: basename,
         path: `${ctx.origin}/uploads/${basename}`,
         size: files.size,
@@ -34,10 +32,9 @@ router.post('/', new Auth(UserType.ADMIN).auth, async (ctx) => {
       })
     }
   } else if (upType === '[object Array]') {
-    const dataLis = files.map((file) => {
+    const dataLis = files.map(file => {
       const basename = path.basename(file.path)
       return {
-        // articleId,
         name: basename,
         path: `${ctx.origin}/uploads/${basename}`,
         size: file.size,
@@ -61,7 +58,27 @@ router.post('/', new Auth(UserType.ADMIN).auth, async (ctx) => {
   }
 })
 
-router.get('/:id', async (ctx) => {
+router.post('/add', new Auth(UserType.ADMIN).auth, async ctx => {
+  const v = await new FileValidator().validate(ctx)
+  const name = v.get('body.name')
+  const path = v.get('body.path')
+  const extension = v.get('body.extension')
+  const size = v.get('body.size')
+  const [err, savedFile] = await FileDao.create({
+    name,
+    path,
+    extension,
+    size
+  })
+  if (!err) {
+    ctx.body = new SuccessModel('创建图片记录成功', savedFile)
+    ctx.status = 200
+  } else {
+    throw err
+  }
+})
+
+router.get('/:id', async ctx => {
   const v = await new PositiveIdValidator().validate(ctx)
   const id = v.get('path.id')
 
@@ -74,7 +91,7 @@ router.get('/:id', async (ctx) => {
   }
 })
 
-router.delete('/:id', new Auth(UserType.ADMIN).auth, async (ctx) => {
+router.delete('/:id', new Auth(UserType.ADMIN).auth, async ctx => {
   const v = await new PositiveIdValidator().validate(ctx)
   const id = v.get('path.id')
 
