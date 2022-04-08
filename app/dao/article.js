@@ -162,8 +162,35 @@ class ArticleDao {
   static async list(body = {}) {
     try {
       const { id, title, pageNum, pageSize, adminId, categoryIds, tagIds } = body
+      const hasCateCondition = categoryIds && isArray(categoryIds) && categoryIds.length
+      const hasTagCondition = tagIds && isArray(tagIds) && tagIds.length
       const filter = {}
-      const include = [Banner, Admin]
+      const include = [
+        Banner,
+        Admin,
+        {
+          model: Category,
+          through: { attributes: [] },
+          where: hasCateCondition
+            ? {
+                id: {
+                  [Op.in]: categoryIds
+                }
+              }
+            : {}
+        },
+        {
+          model: Tag,
+          through: { attributes: [] },
+          where: hasTagCondition
+            ? {
+                id: {
+                  [Op.in]: tagIds
+                }
+              }
+            : {}
+        }
+      ]
       if (id) {
         filter.id = id
       }
@@ -174,28 +201,6 @@ class ArticleDao {
       }
       if (adminId) {
         filter.adminId = adminId
-      }
-      if (categoryIds && isArray(categoryIds) && categoryIds.length) {
-        include.push({
-          model: Category,
-          through: { attributes: [] },
-          where: {
-            id: {
-              [Op.in]: categoryIds
-            }
-          }
-        })
-      }
-      if (tagIds && isArray(tagIds) && tagIds.length) {
-        include.push({
-          model: Tag,
-          through: { attributes: [] },
-          where: {
-            id: {
-              [Op.in]: tagIds
-            }
-          }
-        })
       }
       const condition = {
         where: filter,

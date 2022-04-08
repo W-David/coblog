@@ -25,7 +25,7 @@ const sequelize = new Sequelize(dbName, user, password, {
       },
       iv: {
         attributes: {
-          exclude: ['content', 'created_at', 'deleted_at']
+          exclude: ['content', 'deleted_at']
         }
       },
       tb: {

@@ -6,7 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 package-lock.json
 static/
-config/
+config/config.js
 
 .idea
 .vscode
