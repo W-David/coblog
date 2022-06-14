@@ -59,7 +59,11 @@ Article.belongsToMany(Category, {
   onUpdate: 'CASCADE',
   onDelete: 'CASCADE'
 })
-Category.belongsToMany(Article, { through: ArticleCategory })
+Category.belongsToMany(Article, {
+  through: ArticleCategory,
+  onUpdate: 'CASCADE',
+  onDelete: 'CASCADE'
+})
 
 //文章和标签关联
 Article.belongsToMany(Tag, {
@@ -67,7 +71,11 @@ Article.belongsToMany(Tag, {
   onUpdate: 'CASCADE',
   onDelete: 'CASCADE'
 })
-Tag.belongsToMany(Article, { through: ArticleTag })
+Tag.belongsToMany(Article, {
+  through: ArticleTag,
+  onUpdate: 'CASCADE',
+  onDelete: 'CASCADE'
+})
 
 sequelize.sync().then(() => Ru.create({ ...admin }))
 

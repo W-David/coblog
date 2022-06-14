@@ -43,16 +43,27 @@ class ArticleDao {
   static async detail(id) {
     try {
       const article = await Article.findByPk(id, {
+        attributes: {
+          exclude: ['description', 'created_at', 'updated_at', 'deleted_at', 'adminId']
+        },
         include: [
-          Banner,
-          Admin,
+          {
+            model: Banner,
+            attributes: ['path']
+          },
+          {
+            model: Admin,
+            attributes: ['id', 'email', 'avatar', 'nickname']
+          },
           {
             model: Category,
-            through: { attributes: [] }
+            through: { attributes: [] },
+            attributes: ['id', 'name']
           },
           {
             model: Tag,
-            through: { attributes: [] }
+            through: { attributes: [] },
+            attributes: ['id', 'name']
           }
         ]
       })
@@ -166,29 +177,41 @@ class ArticleDao {
       const hasTagCondition = tagIds && isArray(tagIds) && tagIds.length
       const filter = {}
       const include = [
-        Banner,
-        Admin,
+        {
+          model: Banner,
+          attributes: ['path']
+        },
+        {
+          model: Admin,
+          attributes: ['id', 'email', 'avatar', 'nickname']
+        },
         {
           model: Category,
-          through: { attributes: [] },
+          through: {
+            attributes: []
+          },
+          attributes: ['name'],
           where: hasCateCondition
             ? {
                 id: {
                   [Op.in]: categoryIds
                 }
               }
-            : {}
+            : null
         },
         {
           model: Tag,
-          through: { attributes: [] },
+          through: {
+            attributes: []
+          },
+          attributes: ['name'],
           where: hasTagCondition
             ? {
                 id: {
                   [Op.in]: tagIds
                 }
               }
-            : {}
+            : null
         }
       ]
       if (id) {
@@ -205,14 +228,18 @@ class ArticleDao {
       const condition = {
         where: filter,
         include,
-        order: [['created_at', 'DESC']]
+        attributes: {
+          exclude: ['content', 'deleted_at']
+        },
+        order: [['created_at', 'DESC']],
+        distinct: true
       }
       if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {
         condition.limit = +pageSize
         condition.offset = +((pageNum - 1) * pageSize)
       }
-      const scope = 'iv'
-      const articles = await Article.scope(scope).findAndCountAll(condition)
+      // debugger
+      const articles = await Article.findAndCountAll(condition)
       return [null, articles]
     } catch (err) {
       return [err, null]

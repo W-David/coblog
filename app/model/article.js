@@ -1,7 +1,7 @@
 const moment = require('moment')
 const { DataTypes } = require('sequelize')
 
-const generateArticle = (sequelize) =>
+const generateArticle = sequelize =>
   sequelize.define('article', {
     id: {
       type: DataTypes.INTEGER(10).UNSIGNED,
@@ -38,9 +38,7 @@ const generateArticle = (sequelize) =>
     createdAt: {
       type: DataTypes.DATE,
       get() {
-        return moment(this.getDataValue('created_at')).format(
-          'YYYY-MM-DD HH:mm:ss'
-        )
+        return moment(this.getDataValue('created_at')).format('YYYY-MM-DD HH:mm:ss')
       }
     }
   })
