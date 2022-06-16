@@ -1,3 +1,4 @@
+// this a template file, set your accessKeyId、accessKeySecret and RoleArn, rename this file or create a file (config.js) to use
 const env = process.env.NODE_ENV
 
 const defaultConfig = {
