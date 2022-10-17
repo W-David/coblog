@@ -1,8 +1,10 @@
 const Router = require('koa-router')
 const { TagValidator, TagsValidator, QueryTagValidator } = require('@validator/tag')
 const { PositiveIdValidator } = require('@validator/other')
+const { admin } = require('@config/config')
 
 const TagDao = require('@dao/tag')
+const AdminDao = require('@dao/admin')
 const Auth = require('@middleware/auth')
 const { UserType } = require('@lib/type')
 const { SuccessModel } = require('@lib/res')
@@ -13,11 +15,21 @@ const router = new Router({ prefix })
 router.post('/create', new Auth(UserType.ADMIN).auth, async ctx => {
   const v = await new TagValidator().validate(ctx)
   const name = v.get('body.name')
-  const [err, tag] = await TagDao.create({ name })
-  if (!err) {
-    ctx.body = new SuccessModel('添加成功', tag)
-    ctx.status = 200
-  } else {
+  const uid = ctx.auth.uid
+  try {
+    const [err, admin] = await AdminDao.detail(uid, 1)
+    if (!err) {
+      const [err, tag] = await TagDao.create({ name, createdBy: admin.dataValues.nickname })
+      if (!err) {
+        ctx.body = new SuccessModel('添加成功', tag)
+        ctx.status = 200
+      } else {
+        throw err
+      }
+    } else {
+      throw err
+    }
+  } catch (err) {
     throw err
   }
 })
@@ -70,10 +82,10 @@ router.get('/list', async ctx => {
   }
 })
 
-router.get('/list/articles', async ctx => {
+router.post('/list/articles', async ctx => {
   const v = await new QueryTagValidator().validate(ctx)
-  const query = v.get('query')
-  const [err, tags] = await TagDao.queryListArticles(query)
+  const body = v.get('body')
+  const [err, tags] = await TagDao.queryListArticles(body)
   if (!err) {
     ctx.body = new SuccessModel('查询成功', tags)
     ctx.status = 200

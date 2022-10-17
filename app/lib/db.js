@@ -5,6 +5,11 @@ const initModel = require('@model/init-model')
 
 const sequelize = new Sequelize(dbName, user, password, {
   dialect: 'mysql',
+  dialectOptions: {
+    charset: 'utf8mb4',
+    supportBigNumbers: true,
+    bigNumberStrings: true
+  },
   host,
   port,
   logging: false,
@@ -37,7 +42,7 @@ const sequelize = new Sequelize(dbName, user, password, {
   }
 })
 
-const { Admin, Article, Banner, Category, Tag, User, ArticleCategory, ArticleTag, Ru } = initModel(sequelize)
+const { Admin, Article, Banner, Category, Tag, User, ArticleCategory, ArticleTag } = initModel(sequelize)
 
 //管理员和文章关联
 Admin.hasMany(Article, {
@@ -77,7 +82,11 @@ Tag.belongsToMany(Article, {
   onDelete: 'CASCADE'
 })
 
-sequelize.sync().then(() => Ru.create({ ...admin }))
+sequelize.sync().then(async () => {
+  const hasAdmin = await Admin.findOne({ where: { email: admin.email, deleted_at: null } })
+  if (hasAdmin) return
+  await Admin.create(admin)
+})
 
 sequelize
   .authenticate()
@@ -96,6 +105,5 @@ module.exports = {
   Tag,
   User,
   ArticleCategory,
-  ArticleTag,
-  Ru
+  ArticleTag
 }

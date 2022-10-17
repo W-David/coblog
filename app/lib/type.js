@@ -16,6 +16,7 @@ const LoginType = {
 }
 
 const UserType = {
+  DEFAULT: -1,
   USER: 2,
   ADMIN: 4,
   SUPER_ADMIN: 8

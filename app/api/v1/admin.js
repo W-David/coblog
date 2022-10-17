@@ -1,10 +1,8 @@
 const Router = require('koa-router')
-const { admin } = require('@config/config')
+const { admin: superAdmin } = require('@config/config')
 
 const { RegisterValidator, AdminValidator, QueryAdminValidator } = require('@validator/admin')
 const { PositiveIdValidator } = require('@validator/other')
-const bcrypt = require('bcryptjs')
-const { Ru } = require('@lib/db')
 
 const AdminDao = require('@dao/admin')
 const Auth = require('@middleware/auth')
@@ -43,30 +41,19 @@ router.post('/login', async ctx => {
   const password = v.get('body.password')
 
   try {
-    const scope = 'bh'
-    const ru = await Ru.scope(scope).findOne({ where: { email, deleted_at: null } })
-    if (ru) {
-      const correct = bcrypt.compareSync(password, ru.password)
-      if (!correct) {
-        throw new global.errs.AuthFailed('密码错误')
-      }
-      const token = generateToken(ru.id, UserType.SUPER_ADMIN)
-      ctx.body = new SuccessModel('超级管理员您好，您已登录成功', { ...ru.dataValues, token })
-      ctx.status = 200
-    } else {
-      const [err, admin] = await AdminDao.verify(email, password)
-      if (!err) {
-        const token = generateToken(admin.id, UserType.ADMIN)
-        const [dErr, dAdmin] = await AdminDao.detail(admin.id, 1)
-        if (!dErr) {
-          ctx.body = new SuccessModel('登录成功', { ...dAdmin.dataValues, token })
-          ctx.status = 200
-        } else {
-          throw dErr
-        }
+    const [err, admin] = await AdminDao.verify(email, password)
+    if (!err) {
+      const isSuperAdmin = superAdmin.email === admin.email && superAdmin.nickname === admin.nickname
+      const token = generateToken(admin.id, isSuperAdmin ? UserType.SUPER_ADMIN : UserType.ADMIN)
+      const [dErr, dAdmin] = await AdminDao.detail(admin.id, 1)
+      if (!dErr) {
+        ctx.body = new SuccessModel('登录成功', { ...dAdmin.dataValues, token })
+        ctx.status = 200
       } else {
-        throw err
+        throw dErr
       }
+    } else {
+      throw err
     }
   } catch (err) {
     throw err
@@ -75,21 +62,13 @@ router.post('/login', async ctx => {
 
 router.get('/auth', new Auth(UserType.ADMIN).auth, async ctx => {
   const uid = ctx.auth.uid
-  const scope = +ctx.auth.scope
-  const isSuperAdmin = scope >= +UserType.SUPER_ADMIN
   try {
-    if (isSuperAdmin) {
-      const ru = await Ru.scope('bh').findOne({ where: { email: admin.email, deleted_at: null } })
-      ctx.body = new SuccessModel('验证成功', { ...ru.dataValues })
+    const [err, admin] = await AdminDao.detail(uid, 1)
+    if (!err) {
+      ctx.body = new SuccessModel('查询成功', { ...admin.dataValues })
       ctx.status = 200
     } else {
-      const [err, admin] = await AdminDao.detail(uid, 1)
-      if (!err) {
-        ctx.body = new SuccessModel('查询成功', { ...admin.dataValues })
-        ctx.status = 200
-      } else {
-        throw err
-      }
+      throw err
     }
   } catch (err) {
     throw err

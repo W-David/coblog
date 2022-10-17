@@ -5,7 +5,7 @@ const { isNumber, isArray } = require('@lib/util')
 class TagDao {
   static async create(data) {
     try {
-      const { name } = data
+      const { name, createdBy } = data
       const hasTag = await Tag.findOne({
         where: {
           name,
@@ -15,7 +15,7 @@ class TagDao {
       if (hasTag) {
         throw new global.errs.Existing('已存在同名标签')
       }
-      const tag = await Tag.create({ name })
+      const tag = await Tag.create({ name, createdBy })
       return [null, tag]
     } catch (err) {
       return [err, null]
@@ -50,6 +50,7 @@ class TagDao {
         include: [
           {
             model: Article,
+            attributes: ['id', 'title', 'createdAt'],
             through: { attributes: [] }
           }
         ]
@@ -89,9 +90,10 @@ class TagDao {
   }
 
   //条件查询标签及其关联文章信息
-  static async queryListArticles(query = {}) {
+  static async queryListArticles(body = {}) {
     try {
-      const { ids, pageNum, pageSize } = query
+      const scope = 'bh'
+      const { ids, pageNum, pageSize } = body
       const filter = {}
       if (ids && isArray(ids) && ids.length) {
         filter.id = {
@@ -112,7 +114,7 @@ class TagDao {
         condition.limit = +pageSize
         condition.offset = +((pageNum - 1) * pageSize)
       }
-      const tags = await Tag.findAndCountAll(condition)
+      const tags = await Tag.scope(scope).findAndCountAll(condition)
       return [null, tags]
     } catch (err) {
       return [err, null]

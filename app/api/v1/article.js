@@ -1,5 +1,6 @@
 const Router = require('koa-router')
 const { ArticleValidator, QueryArticleValidator } = require('@validator/article')
+const { LinValidator } = require('@core/lin-validator')
 const { PositiveIdValidator } = require('@validator/other')
 
 const ArticleDao = require('@dao/article')
@@ -11,11 +12,11 @@ const prefix = '/api/v1/article'
 const router = new Router({ prefix })
 
 router.post('/create', new Auth(UserType.ADMIN).auth, async ctx => {
+  const adminId = ctx.auth.uid
   const v = await new ArticleValidator().validate(ctx)
   const title = v.get('body.title')
   const description = v.get('body.description')
   const content = v.get('body.content')
-  const adminId = v.get('body.adminId')
   const bannerId = v.get('body.bannerId')
   const categoryIds = v.get('body.categoryIds')
   const tagIds = v.get('body.tagIds')
@@ -52,12 +53,12 @@ router.get('/detail/:id', async ctx => {
 })
 
 router.put('/update/:id', new Auth(UserType.ADMIN).auth, async ctx => {
+  const adminId = ctx.auth.uid
   const v = await new ArticleValidator().validate(ctx)
   const id = v.get('path.id')
   const title = v.get('body.title')
   const description = v.get('body.description')
   const content = v.get('body.content')
-  const adminId = v.get('body.adminId')
   const bannerId = v.get('body.bannerId')
   const categoryIds = v.get('body.categoryIds')
   const tagIds = v.get('body.tagIds')
@@ -87,6 +88,18 @@ router.post('/list', async ctx => {
   const [err, articles] = await ArticleDao.list(body)
   if (!err) {
     ctx.body = new SuccessModel('查询成功', articles)
+  } else {
+    throw err
+  }
+})
+
+router.post('/listByTime', new Auth(UserType.ADMIN).auth, async ctx => {
+  const v = await new LinValidator().validate(ctx)
+  const body = v.get('body')
+  const adminId = ctx.auth.uid
+  const [err, articles] = await ArticleDao.listByTime({ ...body, adminId })
+  if (!err) {
+    ctx.body = new SuccessModel('已生成时间线文章列表', articles)
   } else {
     throw err
   }

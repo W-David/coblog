@@ -11,7 +11,7 @@ const generateAdmin = sequelize =>
     },
     email: {
       type: DataTypes.STRING(50),
-      unique: 'admin_email_unique',
+      unique: true,
       allowNull: false
     },
     password: {

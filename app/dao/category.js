@@ -5,7 +5,7 @@ const { Category, Article } = require('@lib/db')
 class CategoryDao {
   static async create(data) {
     try {
-      const { name } = data
+      const { name, createdBy } = data
       const hasCategory = await Category.findOne({
         where: {
           name,
@@ -15,7 +15,7 @@ class CategoryDao {
       if (hasCategory) {
         throw new global.errs.Existing('已存在同名类型')
       }
-      const category = await Category.create({ name })
+      const category = await Category.create({ name, createdBy })
       return [null, category]
     } catch (err) {
       return [err, null]
@@ -57,9 +57,10 @@ class CategoryDao {
   }
 
   //条件查询分类及其关联文章信息
-  static async queryListArticles(query = {}) {
+  static async queryListArticles(body = {}) {
     try {
-      const { ids, pageNum, pageSize } = query
+      const scope = 'bh'
+      const { ids, pageNum, pageSize } = body
       const filter = {}
       if (ids && isArray(ids) && ids.length) {
         filter.id = {
@@ -71,6 +72,7 @@ class CategoryDao {
         include: [
           {
             model: Article,
+            attributes: ['id', 'title', 'createdAt'],
             through: { attributes: [] }
           }
         ],
@@ -80,7 +82,7 @@ class CategoryDao {
         condition.limit = +pageSize
         condition.offset = +((pageNum - 1) * pageSize)
       }
-      const categories = await Category.findAndCountAll(condition)
+      const categories = await Category.scope(scope).findAndCountAll(condition)
       return [null, categories]
     } catch (err) {
       return [err, null]

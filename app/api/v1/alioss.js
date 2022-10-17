@@ -5,7 +5,6 @@ const conf = require('@config/config').alioss
 const { RegisterValidator, AdminValidator, QueryAdminValidator } = require('@validator/admin')
 
 const { PositiveIdValidator } = require('@validator/other')
-const { Ru } = require('@lib/db')
 
 const AdminDao = require('@dao/admin')
 const Auth = require('@middleware/auth')

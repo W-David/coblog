@@ -15,14 +15,15 @@ class ArticleDao {
       if (hasArticle) {
         throw new global.errs.Existing('文章已存在')
       }
-      const [err, _] = await ArticleDao._handleAdmin(adminId)
+
+      const [err, admin] = await ArticleDao._handleAdmin(adminId)
       if (err) throw err
+
       //创建文章
       const article = await Article.create({
         title,
         description,
-        content,
-        adminId
+        content
       })
       const resLis = await Promise.all([
         ArticleDao._handleBanner(bannerId),
@@ -33,7 +34,12 @@ class ArticleDao {
         if (err) throw err
       })
       const [banner, categoris, tags] = resLis.map(([_, res]) => res)
-      await Promise.all([article.setBanner(banner), article.setCategories(categoris), article.setTags(tags)])
+      await Promise.all([
+        article.setAdmin(admin),
+        article.setBanner(banner),
+        article.setCategories(categoris),
+        article.setTags(tags)
+      ])
       return [null, article]
     } catch (err) {
       return [err, null]
@@ -44,12 +50,12 @@ class ArticleDao {
     try {
       const article = await Article.findByPk(id, {
         attributes: {
-          exclude: ['description', 'created_at', 'updated_at', 'deleted_at', 'adminId']
+          exclude: ['created_at', 'updated_at', 'deleted_at', 'adminId']
         },
         include: [
           {
             model: Banner,
-            attributes: ['path']
+            attributes: ['id', 'path']
           },
           {
             model: Admin,
@@ -145,7 +151,8 @@ class ArticleDao {
       if (!article) {
         throw new global.errs.NotFound('文章不存在')
       }
-      const [err, _] = await ArticleDao._handleAdmin(adminId)
+
+      const [err, admin] = await ArticleDao._handleAdmin(adminId)
       if (err) throw err
 
       article.adminId = adminId
@@ -162,7 +169,12 @@ class ArticleDao {
         if (err) throw err
       })
       const [banner, categoris, tags] = resLis.map(([_, res]) => res)
-      await Promise.all([article.setBanner(banner), article.setCategories(categoris), article.setTags(tags)])
+      await Promise.all([
+        article.setAdmin(admin),
+        article.setBanner(banner),
+        article.setCategories(categoris),
+        article.setTags(tags)
+      ])
       const res = await article.save()
       return [null, res]
     } catch (err) {
@@ -179,7 +191,7 @@ class ArticleDao {
       const include = [
         {
           model: Banner,
-          attributes: ['path']
+          attributes: ['id', 'path']
         },
         {
           model: Admin,
@@ -190,7 +202,7 @@ class ArticleDao {
           through: {
             attributes: []
           },
-          attributes: ['name'],
+          attributes: ['id', 'name'],
           where: hasCateCondition
             ? {
                 id: {
@@ -204,7 +216,7 @@ class ArticleDao {
           through: {
             attributes: []
           },
-          attributes: ['name'],
+          attributes: ['id', 'name'],
           where: hasTagCondition
             ? {
                 id: {
@@ -239,6 +251,64 @@ class ArticleDao {
         condition.offset = +((pageNum - 1) * pageSize)
       }
       // debugger
+      const articles = await Article.findAndCountAll(condition)
+      return [null, articles]
+    } catch (err) {
+      return [err, null]
+    }
+  }
+
+  static async listByTime(body = {}) {
+    try {
+      const { adminId, beginTime, endTime, pageNum, pageSize } = body
+      const filter = {}
+      const include = [
+        {
+          model: Category,
+          through: {
+            attributes: []
+          },
+          attributes: ['id', 'name']
+        },
+        {
+          model: Tag,
+          through: {
+            attributes: []
+          },
+          attributes: ['id', 'name']
+        }
+      ]
+      if (adminId) {
+        filter.adminId = adminId
+      }
+      if (beginTime || endTime) {
+        if (beginTime && !endTime) {
+          filter.createdAt = {
+            [Op.gte]: beginTime
+          }
+        } else if (!beginTime && endTime) {
+          filter.createdAt = {
+            [Op.lte]: endTime
+          }
+        } else {
+          filter.createdAt = {
+            [Op.between]: [beginTime, endTime]
+          }
+        }
+      }
+      const condition = {
+        where: filter,
+        include,
+        attributes: {
+          exclude: ['content', 'deleted_at', 'created_at', 'updated_at']
+        },
+        order: [['created_at', 'DESC']],
+        distinct: true
+      }
+      if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {
+        condition.limit = +pageSize
+        condition.offset = +((pageNum - 1) * pageSize)
+      }
       const articles = await Article.findAndCountAll(condition)
       return [null, articles]
     } catch (err) {

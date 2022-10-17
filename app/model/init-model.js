@@ -4,12 +4,11 @@ const generateFile = require('./file')
 const generateCategory = require('./category')
 const generateTag = require('./tag')
 const generateUser = require('./user')
-const generateRu = require('./ru')
 
 const generateArticleCategory = require('./articleCategory')
 const generateArticleTag = require('./articleTag')
 
-module.exports = (sequelize) => {
+module.exports = sequelize => {
   const Admin = generateAdmin(sequelize)
   const Article = generateArticle(sequelize)
   const Banner = generateFile('banner', sequelize)
@@ -18,7 +17,6 @@ module.exports = (sequelize) => {
   const User = generateUser(sequelize)
   const ArticleCategory = generateArticleCategory(sequelize, Article, Category)
   const ArticleTag = generateArticleTag(sequelize, Article, Tag)
-  const Ru = generateRu(sequelize)
 
   return {
     Admin,
@@ -28,7 +26,6 @@ module.exports = (sequelize) => {
     Tag,
     User,
     ArticleCategory,
-    ArticleTag,
-    Ru
+    ArticleTag
   }
 }

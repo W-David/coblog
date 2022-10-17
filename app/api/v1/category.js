@@ -3,6 +3,7 @@ const { CategoryValidator, CategoriesValidator, QueryCategoryValidator } = requi
 const { PositiveIdValidator } = require('@validator/other')
 
 const CategoryDao = require('@dao/category')
+const AdminDao = require('@dao/admin')
 const Auth = require('@middleware/auth')
 const { UserType } = require('@lib/type')
 const { SuccessModel } = require('@lib/res')
@@ -13,11 +14,21 @@ const router = new Router({ prefix })
 router.post('/create', new Auth(UserType.ADMIN).auth, async ctx => {
   const v = await new CategoryValidator().validate(ctx)
   const name = v.get('body.name')
-  const [err, category] = await CategoryDao.create({ name })
-  if (!err) {
-    ctx.body = new SuccessModel('添加成功', category)
-    ctx.status = 200
-  } else {
+  const uid = ctx.auth.uid
+  try {
+    const [err, admin] = await AdminDao.detail(uid, 1)
+    if (!err) {
+      const [err, category] = await CategoryDao.create({ name, createdBy: admin.dataValues.nickname })
+      if (!err) {
+        ctx.body = new SuccessModel('添加成功', category)
+        ctx.status = 200
+      } else {
+        throw err
+      }
+    } else {
+      throw err
+    }
+  } catch (err) {
     throw err
   }
 })
@@ -70,10 +81,10 @@ router.get('/list', async ctx => {
   }
 })
 
-router.get('/list/articles', async ctx => {
+router.post('/list/articles', async ctx => {
   const v = await new QueryCategoryValidator().validate(ctx)
-  const query = v.get('query')
-  const [err, categories] = await CategoryDao.queryListArticles(query)
+  const body = v.get('body')
+  const [err, categories] = await CategoryDao.queryListArticles(body)
   if (!err) {
     ctx.body = new SuccessModel('查询成功', categories)
     ctx.status = 200
