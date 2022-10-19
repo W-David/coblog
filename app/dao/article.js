@@ -300,7 +300,7 @@ class ArticleDao {
         where: filter,
         include,
         attributes: {
-          exclude: ['content', 'deleted_at', 'created_at', 'updated_at']
+          exclude: ['content', 'deleted_at', 'updated_at']
         },
         order: [['created_at', 'DESC']],
         distinct: true

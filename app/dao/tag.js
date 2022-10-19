@@ -105,6 +105,7 @@ class TagDao {
         include: [
           {
             model: Article,
+            attributes: ['id', 'title', 'createdAt', 'created_at'],
             through: { attributes: [] }
           }
         ],
