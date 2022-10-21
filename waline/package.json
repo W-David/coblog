@@ -1,0 +1,17 @@
+{
+	"name": "waline",
+	"version": "1.0.0",
+	"main": "index.js",
+	"license": "MIT",
+	"scripts": {
+		"dev": "node ./app.js",
+		"start": "pm2 start ./pm2.config.js",
+		"stop": "pm2 stop waline-service",
+		"log": "pm2 log waline-service",
+		"status": "pm2 status"
+	},
+	"dependencies": {
+		"@waline/vercel": "^1.24.0",
+		"dotenv": "^16.0.3"
+	}
+}
