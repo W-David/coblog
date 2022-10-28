@@ -134,7 +134,8 @@ class AdminDao {
     try {
       const condition = {
         where: filter,
-        order: [['created_at', 'DESC']]
+        order: [['created_at', 'DESC']],
+				distinct: true
       }
       //若存在页码参数，添加分页条件
       if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {

@@ -75,7 +75,8 @@ class TagDao {
       }
       const condition = {
         where: filter,
-        order: [['created_at', 'DESC']]
+        order: [['created_at', 'DESC']],
+        distinct: true
       }
       if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {
         condition.limit = +pageSize
@@ -109,7 +110,8 @@ class TagDao {
             through: { attributes: [] }
           }
         ],
-        order: [['created_at', 'DESC']]
+        order: [['created_at', 'DESC']],
+        distinct: true
       }
       if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {
         condition.limit = +pageSize

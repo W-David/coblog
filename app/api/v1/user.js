@@ -67,7 +67,7 @@ router.get('/auth', new Auth(UserType.USER).auth, async ctx => {
 })
 
 //获取用户详情，需要管理员权限
-router.get('/detail/:id', new Auth(UserType.ADMIN).auth, async ctx => {
+router.get('/detail/:id', new Auth(UserType.USER).auth, async ctx => {
   const v = await new PositiveIdValidator().validate(ctx)
   const id = v.get('path.id')
 
@@ -109,7 +109,7 @@ router.delete('/delete/:id', new Auth(UserType.ADMIN).auth, async ctx => {
 })
 
 //更新用户，需要管理员权限
-router.put('/update/:id', new Auth(UserType.ADMIN).auth, async ctx => {
+router.put('/update/:id', new Auth(UserType.USER).auth, async ctx => {
   const v = await new UserValidator().validate(ctx)
   const id = v.get('path.id')
   const email = v.get('body.email')
