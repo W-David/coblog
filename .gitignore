@@ -10,3 +10,4 @@ config/config.js
 
 .idea
 .vscode
+.vscode/launch.json

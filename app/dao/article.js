@@ -258,6 +258,27 @@ class ArticleDao {
     }
   }
 
+  static async listIdByTitle({ title }) {
+    try {
+      const filter = {}
+      if (title) {
+        filter.title = {
+          [Op.like]: `%${title}%`
+        }
+      }
+      const condition = {
+        where: filter,
+        attributes: ['id', 'title'],
+        order: [['updated_at', 'DESC']],
+        distinct: true
+      }
+      const articles = await Article.findAll(condition)
+      return [null, articles]
+    } catch (err) {
+      return [err, null]
+    }
+  }
+
   static async listByTime(body = {}) {
     try {
       const { adminId, beginTime, endTime, pageNum, pageSize } = body
