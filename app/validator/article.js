@@ -5,7 +5,7 @@ const { PositiveIdValidator, BodyQueryValidator } = require('./other')
 class ArticleValidator extends PositiveIdValidator {
   constructor() {
     super()
-    this.title = [new Rule('isLength', '标题不能为空', { min: 1 })]
+    this.title = [new Rule('isLength', '标题应为2-80个字符长度', { min: 2, max: 80 })]
     this.content = [new Rule('isLength', '文章内容不能为空', { min: 1 })]
     // this.adminId = [new Rule('isLength', 'adminId不能为空', { min: 1 })]
     this.description = [new Rule('isLength', '描述不能为空', { min: 1 })]

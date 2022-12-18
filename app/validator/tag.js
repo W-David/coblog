@@ -4,7 +4,7 @@ const { PositiveIdValidator, QueryValidator } = require('./other')
 class TagValidator extends PositiveIdValidator {
   constructor() {
     super()
-    this.name = [new Rule('isLength', '标签名称不能为空', { min: 1 })]
+    this.name = [new Rule('isLength', '标签名称为2-40个字符长度', { min: 2, max: 40 })]
   }
 }
 
