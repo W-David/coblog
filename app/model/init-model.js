@@ -7,6 +7,8 @@ const generateUser = require('./user')
 
 const generateArticleCategory = require('./articleCategory')
 const generateArticleTag = require('./articleTag')
+const generateArticleFavoUser = require('./articleFavoUser')
+const generateArticleFavoAdmin = require('./articleFavoAdmin')
 
 module.exports = sequelize => {
   const Admin = generateAdmin(sequelize)
@@ -17,6 +19,8 @@ module.exports = sequelize => {
   const User = generateUser(sequelize)
   const ArticleCategory = generateArticleCategory(sequelize, Article, Category)
   const ArticleTag = generateArticleTag(sequelize, Article, Tag)
+  const ArticleFavoAdmin = generateArticleFavoAdmin(sequelize, Article, Admin)
+  const ArticleFavoUser = generateArticleFavoUser(sequelize, Article, User)
 
   return {
     Admin,
@@ -26,6 +30,8 @@ module.exports = sequelize => {
     Tag,
     User,
     ArticleCategory,
-    ArticleTag
+    ArticleTag,
+    ArticleFavoAdmin,
+    ArticleFavoUser
   }
 }

@@ -42,47 +42,57 @@ const sequelize = new Sequelize(dbName, user, password, {
   }
 })
 
-const { Admin, Article, Banner, Category, Tag, User, ArticleCategory, ArticleTag } = initModel(sequelize)
+const { Admin, Article, Banner, Category, Tag, User, ArticleCategory, ArticleTag, ArticleFavoAdmin, ArticleFavoUser } =
+  initModel(sequelize)
 
 //管理员和文章关联
-Admin.hasMany(Article, {
-  onUpdate: 'CASCADE',
-  onDelete: 'SET NULL'
-})
+Admin.hasMany(Article)
 Article.belongsTo(Admin)
 
 //文章和头图关联
-Article.hasOne(Banner, {
-  onUpdate: 'CASCADE',
-  onDelete: 'SET NULL'
-})
+Article.hasOne(Banner)
 Banner.belongsTo(Article)
 
 //文章和类型关联
 Article.belongsToMany(Category, {
-  through: ArticleCategory,
-  onUpdate: 'CASCADE',
-  onDelete: 'CASCADE'
+  through: ArticleCategory
 })
 Category.belongsToMany(Article, {
-  through: ArticleCategory,
-  onUpdate: 'CASCADE',
-  onDelete: 'CASCADE'
+  through: ArticleCategory
 })
 
 //文章和标签关联
 Article.belongsToMany(Tag, {
-  through: ArticleTag,
-  onUpdate: 'CASCADE',
-  onDelete: 'CASCADE'
+  through: ArticleTag
 })
 Tag.belongsToMany(Article, {
-  through: ArticleTag,
-  onUpdate: 'CASCADE',
-  onDelete: 'CASCADE'
+  through: ArticleTag
 })
 
-sequelize.sync().then(async () => {
+//文章和喜欢文章的管理员关联
+Article.belongsToMany(Admin, {
+  through: ArticleFavoAdmin,
+  as: 'FavoAdmins'
+})
+Admin.belongsToMany(Article, {
+  through: ArticleFavoAdmin,
+  as: 'LoveArticles'
+})
+
+//文章和喜欢文章的用户关联
+Article.belongsToMany(User, {
+  through: ArticleFavoUser,
+  as: 'FavoUsers'
+})
+User.belongsToMany(Article, {
+  through: ArticleFavoUser,
+  as: 'LoveArticles'
+})
+
+const initMode = {}
+// const initMode = { force: true }
+// const initMode = { alter: true}
+sequelize.sync(initMode).then(async () => {
   const hasAdmin = await Admin.findOne({ where: { email: admin.email, deleted_at: null } })
   if (hasAdmin) return
   await Admin.create(admin)
@@ -105,5 +115,7 @@ module.exports = {
   Tag,
   User,
   ArticleCategory,
-  ArticleTag
+  ArticleTag,
+  ArticleFavoAdmin,
+  ArticleFavoUser
 }

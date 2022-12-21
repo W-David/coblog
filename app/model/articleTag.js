@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize')
 
 const generateArticleTag = (sequelize, Article, Tag) =>
-  sequelize.define('articleTag', {
+  sequelize.define('article_tag', {
     articleId: {
       type: DataTypes.INTEGER(10).UNSIGNED,
       references: {

@@ -30,11 +30,6 @@ const generateArticle = sequelize =>
       allowNull: true,
       defaultValue: 0
     },
-    favoriteNum: {
-      type: DataTypes.INTEGER(10).UNSIGNED,
-      allowNull: true,
-      defaultValue: 0
-    },
     createdAt: {
       type: DataTypes.DATE,
       get() {

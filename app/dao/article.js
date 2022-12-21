@@ -1,6 +1,7 @@
 const { Op } = require('sequelize')
+const { UserType } = require('@lib/type')
 const { isArray, unique, isNumber } = require('@lib/util')
-const { Article, Admin, Category, Banner, Tag } = require('@lib/db')
+const { Article, Admin, Category, Banner, Tag, User, ArticleFavoAdmin, ArticleFavoUser } = require('@lib/db')
 
 class ArticleDao {
   static async create(data) {
@@ -46,8 +47,9 @@ class ArticleDao {
     }
   }
 
-  static async detail(id) {
+  static async detail(data) {
     try {
+      const { uid, scope, id } = data
       const article = await Article.findByPk(id, {
         attributes: {
           exclude: ['created_at', 'updated_at', 'deleted_at', 'adminId']
@@ -76,6 +78,23 @@ class ArticleDao {
       if (!article) {
         throw new global.errs.NotFound('文章不存在')
       }
+      let record = null
+      if (scope >= UserType.DEFAULT && scope <= UserType.USER) {
+        record = await ArticleFavoUser.findOne({
+          where: {
+            articleId: id,
+            userId: uid
+          }
+        })
+      } else {
+        record = await ArticleFavoAdmin.findOne({
+          where: {
+            articleId: id,
+            adminId: uid
+          }
+        })
+      }
+      article.isFavorited = !!record
       return [null, article]
     } catch (err) {
       return [err, null]
@@ -92,6 +111,21 @@ class ArticleDao {
         throw new global.errs.NotFound('管理员不存在')
       }
       return [null, admin]
+    } catch (err) {
+      return [err, null]
+    }
+  }
+
+  static async _handleUser(userId) {
+    try {
+      if (!userId) {
+        throw new global.errs.ParameterException('缺少用户信息')
+      }
+      const user = await User.findByPk(userId)
+      if (!user) {
+        throw new global.errs.NotFound('用户不存在')
+      }
+      return [null, user]
     } catch (err) {
       return [err, null]
     }
@@ -177,6 +211,43 @@ class ArticleDao {
       ])
       const res = await article.save()
       return [null, res]
+    } catch (err) {
+      return [err, null]
+    }
+  }
+
+  static async favorite(data) {
+    try {
+      const { uid, scope, articleId } = data
+      const article = await Article.findByPk(articleId)
+      if (!article) {
+        throw new global.errs.NotFound('文章不存在')
+      }
+      if (scope > UserType.DEFAULT && scope <= UserType.USER) {
+        const userId = uid
+        const [err, user] = await ArticleDao._handleUser(userId)
+        if (err) throw err
+        const isFavorited = await ArticleFavoUser.findOne({
+          where: { articleId, userId }
+        })
+        !!isFavorited ? await article.removeFavoUser(user, { force: true }) : await article.addFavoUser(user)
+      } else if (scope > UserType.USER) {
+        const adminId = uid
+        const [err, admin] = await ArticleDao._handleAdmin(adminId)
+        if (err) throw err
+        const isFavorited = await ArticleFavoAdmin.findOne({
+          where: { articleId, adminId }
+        })
+        !!isFavorited ? await article.removeFavoAdmin(admin, { force: true }) : await article.addFavoAdmin(admin)
+      } else {
+        throw new global.errs.ParameterException('请先登录')
+      }
+      const countResLis = await Promise.all([
+        ArticleFavoUser.count({ where: { articleId } }),
+        ArticleFavoAdmin.count({ where: { articleId } })
+      ])
+      const favoriteNum = countResLis.reduce((sum, res) => sum + res, 0) || 0
+      return [null, favoriteNum]
     } catch (err) {
       return [err, null]
     }

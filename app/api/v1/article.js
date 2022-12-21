@@ -39,13 +39,19 @@ router.post('/create', new Auth(UserType.ADMIN).auth, async ctx => {
   }
 })
 
-router.get('/detail/:id', async ctx => {
+router.get('/detail/:id', new Auth(UserType.DEFAULT).auth, async ctx => {
+  const scope = +ctx.auth.scope
+  const uid = +ctx.auth.uid
   const v = await new PositiveIdValidator().validate(ctx)
   const id = v.get('path.id')
-
-  const [err, article] = await ArticleDao.detail(id)
+  const data = {
+    uid,
+    scope,
+    id
+  }
+  const [err, article] = await ArticleDao.detail(data)
   if (!err) {
-    ctx.body = new SuccessModel('查询成功', article)
+    ctx.body = new SuccessModel('查询成功', { ...article.dataValues, isFavorited: article.isFavorited })
     ctx.status = 200
   } else {
     throw err
@@ -75,7 +81,26 @@ router.put('/update/:id', new Auth(UserType.ADMIN).auth, async ctx => {
   }
   const [err, article] = await ArticleDao.update(articleData)
   if (!err) {
-    ctx.body = new SuccessModel('更新成功', article)
+    ctx.body = new SuccessModel('更新成功', { ...article.dataValues, isFavorited: article.isFavorited })
+    ctx.status = 200
+  } else {
+    throw err
+  }
+})
+
+router.put('/favorite/:id', new Auth(UserType.USER).auth, async ctx => {
+  const scope = +ctx.auth.scope
+  const uid = +ctx.auth.uid
+  const v = await new LinValidator().validate(ctx)
+  const articleId = v.get('path.id')
+  const data = {
+    uid,
+    scope,
+    articleId
+  }
+  const [err, favoriteNum] = await ArticleDao.favorite(data)
+  if (!err) {
+    ctx.body = new SuccessModel('操作成功', favoriteNum)
     ctx.status = 200
   } else {
     throw err

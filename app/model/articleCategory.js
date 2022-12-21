@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize')
 
 const generateArticleCategory = (sequelize, Article, Category) =>
-  sequelize.define('articleCategory', {
+  sequelize.define('article_category', {
     articleId: {
       type: DataTypes.INTEGER(10).UNSIGNED,
       references: {
