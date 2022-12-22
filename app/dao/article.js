@@ -50,51 +50,55 @@ class ArticleDao {
   static async detail(data) {
     try {
       const { uid, scope, id } = data
-      const article = await Article.findByPk(id, {
-        attributes: {
-          exclude: ['created_at', 'updated_at', 'deleted_at', 'adminId']
-        },
-        include: [
-          {
-            model: Banner,
-            attributes: ['id', 'path']
+      const [favoUserNum, favoAdminNum, article, record] = await Promise.all([
+        ArticleFavoUser.count({ where: { articleId: id } }),
+        ArticleFavoAdmin.count({ where: { articleId: id } }),
+        Article.findByPk(id, {
+          attributes: {
+            exclude: ['created_at', 'updated_at', 'deleted_at', 'adminId']
           },
-          {
-            model: Admin,
-            attributes: ['id', 'email', 'avatar', 'nickname']
-          },
-          {
-            model: Category,
-            through: { attributes: [] },
-            attributes: ['id', 'name']
-          },
-          {
-            model: Tag,
-            through: { attributes: [] },
-            attributes: ['id', 'name']
-          }
-        ]
-      })
+          include: [
+            {
+              model: Banner,
+              attributes: ['id', 'path']
+            },
+            {
+              model: Admin,
+              attributes: ['id', 'email', 'avatar', 'nickname']
+            },
+            {
+              model: Category,
+              through: { attributes: [] },
+              attributes: ['id', 'name']
+            },
+            {
+              model: Tag,
+              through: { attributes: [] },
+              attributes: ['id', 'name']
+            }
+          ]
+        }),
+        scope === UserType.USER
+          ? ArticleFavoUser.findOne({
+              where: {
+                articleId: id,
+                userId: uid
+              }
+            })
+          : scope === UserType.ADMIN || scope === UserType.SUPER_ADMIN
+          ? ArticleFavoAdmin.findOne({
+              where: {
+                articleId: id,
+                adminId: uid
+              }
+            })
+          : Promise.resolve(null)
+      ])
       if (!article) {
         throw new global.errs.NotFound('文章不存在')
       }
-      let record = null
-      if (scope >= UserType.DEFAULT && scope <= UserType.USER) {
-        record = await ArticleFavoUser.findOne({
-          where: {
-            articleId: id,
-            userId: uid
-          }
-        })
-      } else {
-        record = await ArticleFavoAdmin.findOne({
-          where: {
-            articleId: id,
-            adminId: uid
-          }
-        })
-      }
       article.isFavorited = !!record
+      article.favoritedNum = (favoUserNum || 0) + (favoAdminNum || 0)
       return [null, article]
     } catch (err) {
       return [err, null]
@@ -223,7 +227,7 @@ class ArticleDao {
       if (!article) {
         throw new global.errs.NotFound('文章不存在')
       }
-      if (scope > UserType.DEFAULT && scope <= UserType.USER) {
+      if (scope === UserType.USER) {
         const userId = uid
         const [err, user] = await ArticleDao._handleUser(userId)
         if (err) throw err
@@ -231,7 +235,7 @@ class ArticleDao {
           where: { articleId, userId }
         })
         !!isFavorited ? await article.removeFavoUser(user, { force: true }) : await article.addFavoUser(user)
-      } else if (scope > UserType.USER) {
+      } else if (scope === UserType.ADMIN || scope === UserType.SUPER_ADMIN) {
         const adminId = uid
         const [err, admin] = await ArticleDao._handleAdmin(adminId)
         if (err) throw err
@@ -246,8 +250,8 @@ class ArticleDao {
         ArticleFavoUser.count({ where: { articleId } }),
         ArticleFavoAdmin.count({ where: { articleId } })
       ])
-      const favoriteNum = countResLis.reduce((sum, res) => sum + res, 0) || 0
-      return [null, favoriteNum]
+      const favoritedNum = countResLis.reduce((sum, res) => sum + res, 0) || 0
+      return [null, favoritedNum]
     } catch (err) {
       return [err, null]
     }

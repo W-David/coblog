@@ -39,7 +39,7 @@ router.post('/create', new Auth(UserType.ADMIN).auth, async ctx => {
   }
 })
 
-router.get('/detail/:id', new Auth(UserType.DEFAULT).auth, async ctx => {
+router.get('/detail/:id', new Auth(UserType.USER).auth, async ctx => {
   const scope = +ctx.auth.scope
   const uid = +ctx.auth.uid
   const v = await new PositiveIdValidator().validate(ctx)
@@ -50,8 +50,13 @@ router.get('/detail/:id', new Auth(UserType.DEFAULT).auth, async ctx => {
     id
   }
   const [err, article] = await ArticleDao.detail(data)
+  const resData = {
+    ...article.dataValues,
+    isFavorited: article.isFavorited,
+    favoritedNum: article.favoritedNum
+  }
   if (!err) {
-    ctx.body = new SuccessModel('查询成功', { ...article.dataValues, isFavorited: article.isFavorited })
+    ctx.body = new SuccessModel('查询成功', resData)
     ctx.status = 200
   } else {
     throw err
@@ -98,9 +103,9 @@ router.put('/favorite/:id', new Auth(UserType.USER).auth, async ctx => {
     scope,
     articleId
   }
-  const [err, favoriteNum] = await ArticleDao.favorite(data)
+  const [err, favoritedNum] = await ArticleDao.favorite(data)
   if (!err) {
-    ctx.body = new SuccessModel('操作成功', favoriteNum)
+    ctx.body = new SuccessModel('操作成功', favoritedNum)
     ctx.status = 200
   } else {
     throw err
