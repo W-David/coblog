@@ -6,13 +6,19 @@ const parser = require('koa-bodyparser')
 const cors = require('@koa/cors')
 const koaBody = require('koa-body')
 const koaStatic = require('koa-static')
+const compress = require('koa-compress')
 const InitManager = require('./core/init')
 const catchError = require('./app/middleware/exception')
+
 const app = new koa()
 
-//简化路径
+const isProd = process.env.NODE_ENV === 'prod'
 
+//简化路径
 app.use(cors())
+if (isProd) {
+  app.use(compress())
+}
 app.use(catchError())
 app.use(koaStatic(path.join(__dirname, 'static')))
 app.use(
