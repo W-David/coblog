@@ -5,6 +5,12 @@ module.exports = {
       script: './app.js', // 执行入口
       cwd: './', // 工作路径
       watch: true, // 是否开启监听
+      env: {
+        NODE_ENV: 'dev'
+      },
+      env_prod: {
+        NODE_ENV: 'prod'
+      },
       ignore_watch: ['logs', '.git', 'node_modules'], // 监听器忽略文件目录
       out_file: './logs/coblog_info.log', // 日志输出路径
       error_file: './logs/coblog_err.log', // 报错日志输出路径
