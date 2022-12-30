@@ -39,7 +39,7 @@ router.post('/create', new Auth(UserType.ADMIN).auth, async ctx => {
   }
 })
 
-router.get('/detail/:id', new Auth(UserType.USER).auth, async ctx => {
+router.get('/detail/:id', new Auth(UserType.DEFAULT).auth, async ctx => {
   const scope = +ctx.auth.scope
   const uid = +ctx.auth.uid
   const v = await new PositiveIdValidator().validate(ctx)
@@ -135,11 +135,18 @@ router.post('/listByTime', new Auth(UserType.ADMIN).auth, async ctx => {
   }
 })
 
-router.delete('/delete/:id', async ctx => {
+router.delete('/delete/:id', new Auth(UserType.ADMIN).auth, async ctx => {
+  const scope = +ctx.auth.scope
+  const uid = +ctx.auth.uid
   const v = await new PositiveIdValidator().validate(ctx)
   const id = v.get('path.id')
+  const data = {
+    uid,
+    scope,
+    id
+  }
 
-  const [err, res] = await ArticleDao.delete(id)
+  const [err, res] = await ArticleDao.delete(data)
   if (!err) {
     ctx.body = new SuccessModel('删除成功', res)
     ctx.status = 200

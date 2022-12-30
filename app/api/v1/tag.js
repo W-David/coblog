@@ -19,7 +19,7 @@ router.post('/create', new Auth(UserType.ADMIN).auth, async ctx => {
   try {
     const [err, admin] = await AdminDao.detail(uid, 1)
     if (!err) {
-      const [err, tag] = await TagDao.create({ name, createdBy: admin.dataValues.nickname })
+      const [err, tag] = await TagDao.create({ name, createdBy: admin.dataValues.email })
       if (!err) {
         ctx.body = new SuccessModel('添加成功', tag)
         ctx.status = 200
@@ -108,7 +108,7 @@ router.put('/update/:id', new Auth(UserType.ADMIN).auth, async ctx => {
   }
 })
 
-router.delete('/delete/:id', async ctx => {
+router.delete('/delete/:id', new Auth(UserType.ADMIN).auth, async ctx => {
   const v = await new PositiveIdValidator().validate(ctx)
   const id = v.get('path.id')
 

@@ -412,11 +412,17 @@ class ArticleDao {
     }
   }
 
-  static async delete(id) {
+  static async delete(data) {
     try {
-      const article = await Article.findByPk(id)
+      const { uid: adminId, scope, id } = data
+      const article = await Article.findOne({
+        where: {
+          id,
+          adminId
+        }
+      })
       if (!article) {
-        throw new global.errs.NotFound('文章不存在')
+        throw new global.errs.NotFound('只有用户本人可删除')
       }
       const res = await article.destroy()
       return [null, res]

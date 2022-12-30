@@ -18,7 +18,7 @@ router.post('/create', new Auth(UserType.ADMIN).auth, async ctx => {
   try {
     const [err, admin] = await AdminDao.detail(uid, 1)
     if (!err) {
-      const [err, category] = await CategoryDao.create({ name, createdBy: admin.dataValues.nickname })
+      const [err, category] = await CategoryDao.create({ name, createdBy: admin.dataValues.email })
       if (!err) {
         ctx.body = new SuccessModel('添加成功', category)
         ctx.status = 200

@@ -41,7 +41,7 @@ router.post('/login', async ctx => {
   const [err, user] = await UserDao.verify(email, password)
   if (!err) {
     //验证用户是否已存在
-    const token = generateToken(user.id, UserType.ADMIN)
+    const token = generateToken(user.id, UserType.USER)
     const [dErr, dUser] = await UserDao.detail(user.id, 1)
     if (!dErr) {
       ctx.body = new SuccessModel('登录成功', { ...dUser.dataValues, token })
@@ -108,7 +108,7 @@ router.delete('/delete/:id', new Auth(UserType.ADMIN).auth, async ctx => {
   }
 })
 
-//更新用户，需要管理员权限
+//更新用户信息，需要管理员权限
 router.put('/update/:id', new Auth(UserType.USER).auth, async ctx => {
   const v = await new UserValidator().validate(ctx)
   const id = v.get('path.id')

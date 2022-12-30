@@ -101,8 +101,8 @@ router.get('/list', new Auth(UserType.SUPER_ADMIN).auth, async ctx => {
   }
 })
 
-//删除用户，需要管理员权限
-router.delete('/delete/:id', new Auth(UserType.ADMIN).auth, async ctx => {
+//删除用户，需要超级管理员权限
+router.delete('/delete/:id', new Auth(UserType.SUPER_ADMIN).auth, async ctx => {
   const v = await new PositiveIdValidator().validate(ctx)
   const id = v.get('path.id')
 

@@ -14,7 +14,7 @@ const prefix = '/api/v1/search'
 const router = new Router({ prefix })
 
 // 合并搜索
-router.get('/merge-search', new Auth(UserType.USER).auth, async ctx => {
+router.get('/merge-search', async ctx => {
   const v = await new SearchValidator().validate(ctx)
   const queryText = v.get('query.text')
   const queryQueue = [
