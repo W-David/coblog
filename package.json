@@ -54,6 +54,7 @@
 	},
 	"dependencies": {
 		"ali-oss": "^6.16.0",
+		"cls-hooked": "^4.2.2",
 		"koa-body": "^4.2.0",
 		"koa-compress": "^5.1.0",
 		"koa-static": "^5.0.0"

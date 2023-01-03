@@ -108,6 +108,7 @@ sequelize
   })
 
 module.exports = {
+  sequelize,
   Admin,
   Article,
   Banner,

@@ -9,6 +9,8 @@ const koaStatic = require('koa-static')
 const compress = require('koa-compress')
 const InitManager = require('./core/init')
 const catchError = require('./app/middleware/exception')
+const sequelizeTransaction = require('./app/middleware/transaction')
+const { sequelize } = require('./app/lib/db')
 
 const app = new koa()
 
@@ -31,6 +33,7 @@ app.use(
   })
 )
 app.use(parser())
+app.use(sequelizeTransaction({ sequelize }))
 
 InitManager.init(app)
 

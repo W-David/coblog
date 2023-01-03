@@ -1,4 +1,5 @@
 const { Op } = require('sequelize')
+const sequelize = require('sequelize')
 const { UserType } = require('@lib/type')
 const { isArray, unique, isNumber } = require('@lib/util')
 const { Article, Admin, Category, Banner, Tag, User, ArticleFavoAdmin, ArticleFavoUser } = require('@lib/db')
@@ -50,8 +51,7 @@ class ArticleDao {
   static async detail(data) {
     try {
       const { uid, scope, id } = data
-      const [favoUserNum, favoAdminNum, article, record] = await Promise.all([
-        ArticleFavoUser.count({ where: { articleId: id } }),
+      const [favoAdminNum, article] = await Promise.all([
         ArticleFavoAdmin.count({ where: { articleId: id } }),
         Article.findByPk(id, {
           attributes: {
@@ -77,28 +77,21 @@ class ArticleDao {
               attributes: ['id', 'name']
             }
           ]
-        }),
-        scope === UserType.USER
-          ? ArticleFavoUser.findOne({
-              where: {
-                articleId: id,
-                userId: uid
-              }
-            })
-          : scope === UserType.ADMIN || scope === UserType.SUPER_ADMIN
-          ? ArticleFavoAdmin.findOne({
-              where: {
-                articleId: id,
-                adminId: uid
-              }
-            })
-          : Promise.resolve(null)
+        })
       ])
+      if (uid) {
+        const record = await ArticleFavoAdmin.findOne({
+          where: {
+            articleId: id,
+            adminId: uid
+          }
+        })
+        article.isFavorited = !!record
+      }
       if (!article) {
         throw new global.errs.NotFound('文章不存在')
       }
-      article.isFavorited = !!record
-      article.favoritedNum = (favoUserNum || 0) + (favoAdminNum || 0)
+      article.favoritedNum = favoAdminNum || 0
       return [null, article]
     } catch (err) {
       return [err, null]
@@ -227,15 +220,7 @@ class ArticleDao {
       if (!article) {
         throw new global.errs.NotFound('文章不存在')
       }
-      if (scope === UserType.USER) {
-        const userId = uid
-        const [err, user] = await ArticleDao._handleUser(userId)
-        if (err) throw err
-        const isFavorited = await ArticleFavoUser.findOne({
-          where: { articleId, userId }
-        })
-        !!isFavorited ? await article.removeFavoUser(user, { force: true }) : await article.addFavoUser(user)
-      } else if (scope === UserType.ADMIN || scope === UserType.SUPER_ADMIN) {
+      if (scope === UserType.ADMIN || scope === UserType.SUPER_ADMIN) {
         const adminId = uid
         const [err, admin] = await ArticleDao._handleAdmin(adminId)
         if (err) throw err
@@ -246,11 +231,7 @@ class ArticleDao {
       } else {
         throw new global.errs.ParameterException('请先登录')
       }
-      const countResLis = await Promise.all([
-        ArticleFavoUser.count({ where: { articleId } }),
-        ArticleFavoAdmin.count({ where: { articleId } })
-      ])
-      const favoritedNum = countResLis.reduce((sum, res) => sum + res, 0) || 0
+      const favoritedNum = await ArticleFavoAdmin.count({ where: { articleId } })
       return [null, favoritedNum]
     } catch (err) {
       return [err, null]
@@ -356,7 +337,79 @@ class ArticleDao {
 
   static async listByTime(body = {}) {
     try {
-      const { adminId, beginTime, endTime, pageNum, pageSize } = body
+      const { adminId, pageNum, pageSize } = body
+      const filter = {}
+      const include = [
+        {
+          model: Banner,
+          attributes: ['id', 'path']
+        }
+      ]
+      if (adminId) {
+        filter.adminId = adminId
+      }
+      const condition = {
+        where: filter,
+        include,
+        attributes: {
+          exclude: ['updated_at', 'deleted_at', 'content']
+        },
+        order: [['created_at', 'DESC']],
+        distinct: true
+      }
+      if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {
+        condition.limit = +pageSize
+        condition.offset = +((pageNum - 1) * pageSize)
+      }
+      const articles = await Article.findAndCountAll(condition)
+      return [null, articles]
+    } catch (err) {
+      return [err, null]
+    }
+  }
+
+  //此处不统计User的数据
+  static async listByFavo(body = {}) {
+    try {
+      const { pageSize } = body
+      const favo = [sequelize.fn('COUNT', sequelize.col('favoAdmins.id')), 'favoCount']
+      const filter = {}
+      const include = [
+        {
+          model: Banner,
+          attributes: ['id', 'path']
+        },
+        {
+          model: Admin,
+          as: 'FavoAdmins',
+          through: {
+            attributes: []
+          },
+          attributes: [favo]
+        }
+      ]
+      const condition = {
+        where: filter,
+        include,
+        attributes: ['id', 'title', 'description', favo],
+        group: ['id'],
+        order: [[sequelize.literal('favoCount'), 'DESC']],
+        distinct: true,
+        subQuery: false
+      }
+      if (pageSize && isNumber(pageSize)) {
+        condition.limit = +pageSize
+      }
+      const articles = await Article.findAll(condition)
+      return [null, articles]
+    } catch (err) {
+      return [err, null]
+    }
+  }
+
+  static async listArchive(data) {
+    try {
+      const { adminId, format, pageNum, pageSize } = data
       const filter = {}
       const include = [
         {
@@ -377,27 +430,18 @@ class ArticleDao {
       if (adminId) {
         filter.adminId = adminId
       }
-      if (beginTime || endTime) {
-        if (beginTime && !endTime) {
-          filter.createdAt = {
-            [Op.gte]: beginTime
-          }
-        } else if (!beginTime && endTime) {
-          filter.createdAt = {
-            [Op.lte]: endTime
-          }
-        } else {
-          filter.createdAt = {
-            [Op.between]: [beginTime, endTime]
-          }
-        }
+      let dateFormat = []
+      if (format === 'month') {
+        dateFormat = [sequelize.fn('DATE_FORMAT', sequelize.col('article.created_at'), '%Y-%m'), 'month']
+      } else if (format === 'week') {
+        dateFormat = [sequelize.fn('DATE_FORMAT', sequelize.col('article.created_at'), '%Y-%u'), 'week']
+      } else {
+        dateFormat = [sequelize.fn('DATE_FORMAT', sequelize.col('article.created_at'), '%Y-%m-%d'), 'day']
       }
       const condition = {
         where: filter,
         include,
-        attributes: {
-          exclude: ['content', 'deleted_at', 'updated_at']
-        },
+        attributes: ['id', 'title', 'description', 'browse', 'created_at', dateFormat],
         order: [['created_at', 'DESC']],
         distinct: true
       }

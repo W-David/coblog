@@ -7,6 +7,7 @@ const ArticleDao = require('@dao/article')
 const Auth = require('@middleware/auth')
 const { SuccessModel } = require('@lib/res')
 const { UserType } = require('@lib/type')
+const { route } = require('./admin')
 
 const prefix = '/api/v1/article'
 const router = new Router({ prefix })
@@ -39,7 +40,24 @@ router.post('/create', new Auth(UserType.ADMIN).auth, async ctx => {
   }
 })
 
-router.get('/detail/:id', new Auth(UserType.DEFAULT).auth, async ctx => {
+router.get('/noAuthDetail/:id', async ctx => {
+  const v = await new PositiveIdValidator().validate(ctx)
+  const id = v.get('path.id')
+  const data = { id }
+  const [err, article] = await ArticleDao.detail(data)
+  const resData = {
+    ...article.dataValues,
+    favoritedNum: article.favoritedNum
+  }
+  if (!err) {
+    ctx.body = new SuccessModel('查询成功', resData)
+    ctx.status = 200
+  } else {
+    throw err
+  }
+})
+
+router.get('/detail/:id', new Auth(UserType.ADMIN).auth, async ctx => {
   const scope = +ctx.auth.scope
   const uid = +ctx.auth.uid
   const v = await new PositiveIdValidator().validate(ctx)
@@ -123,13 +141,46 @@ router.post('/list', async ctx => {
   }
 })
 
-router.post('/listByTime', new Auth(UserType.ADMIN).auth, async ctx => {
+router.post('/listByTime', async ctx => {
+  const v = await new LinValidator().validate(ctx)
+  const body = v.get('body')
+  const [err, articles] = await ArticleDao.listByTime(body)
+  if (!err) {
+    ctx.body = new SuccessModel('查询成功', articles)
+  } else {
+    throw err
+  }
+})
+
+router.post('/listByFavo', async ctx => {
+  const v = await new LinValidator().validate(ctx)
+  const body = v.get('body')
+  const [err, articles] = await ArticleDao.listByFavo(body)
+  if (!err) {
+    ctx.body = new SuccessModel('查询成功', articles)
+  } else {
+    throw err
+  }
+})
+
+router.post('/listArchive', new Auth(UserType.ADMIN).auth, async ctx => {
   const v = await new LinValidator().validate(ctx)
   const body = v.get('body')
   const adminId = ctx.auth.uid
-  const [err, articles] = await ArticleDao.listByTime({ ...body, adminId })
+  const [err, articles] = await ArticleDao.listArchive({ ...body, adminId })
   if (!err) {
     ctx.body = new SuccessModel('已生成时间线文章列表', articles)
+  } else {
+    throw err
+  }
+})
+
+router.post('/listByTimeAll', async ctx => {
+  const v = await new LinValidator().validate(ctx)
+  const body = v.get('body')
+  const [err, articles] = await ArticleDao.listByTime(body)
+  if (!err) {
+    ctx.body = new SuccessModel('查询成功', articles)
   } else {
     throw err
   }
