@@ -372,7 +372,7 @@ class ArticleDao {
   static async listByFavo(body = {}) {
     try {
       const { pageSize } = body
-      const favo = [sequelize.fn('COUNT', sequelize.col('favoAdmins.id')), 'favoCount']
+      const favo = [sequelize.fn('COUNT', sequelize.col('FavoAdmins.id')), 'favoCount']
       const filter = {}
       const include = [
         {
