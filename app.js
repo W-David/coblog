@@ -9,6 +9,8 @@ const koaStatic = require('koa-static')
 const compress = require('koa-compress')
 const InitManager = require('./core/init')
 const catchError = require('./app/middleware/exception')
+// const sslify = require('koa-sslify').default
+// const https = require('https')
 const sequelizeTransaction = require('./app/middleware/transaction')
 const { sequelize } = require('./app/lib/db')
 
