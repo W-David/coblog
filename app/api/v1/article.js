@@ -7,6 +7,7 @@ const ArticleDao = require('@dao/article')
 const Auth = require('@middleware/auth')
 const { SuccessModel } = require('@lib/res')
 const { UserType } = require('@lib/type')
+const { convToHTML, convToToc } = require('@lib/util')
 const { route } = require('./admin')
 
 const prefix = '/api/v1/article'
@@ -45,8 +46,12 @@ router.get('/noAuthDetail/:id', async ctx => {
   const id = v.get('path.id')
   const data = { id }
   const [err, article] = await ArticleDao.detail(data)
+  const tocArray = await convToToc(article.content)
+  const htmlContent = convToHTML(article.content)
   const resData = {
     ...article.dataValues,
+    tocArray,
+    htmlContent,
     favoritedNum: article.favoritedNum
   }
   if (!err) {
@@ -68,8 +73,12 @@ router.get('/detail/:id', new Auth(UserType.ADMIN).auth, async ctx => {
     id
   }
   const [err, article] = await ArticleDao.detail(data)
+  const tocArray = await convToToc(article.content)
+  const htmlContent = convToHTML(article.content)
   const resData = {
     ...article.dataValues,
+    tocArray,
+    htmlContent,
     isFavorited: article.isFavorited,
     favoritedNum: article.favoritedNum
   }
@@ -103,8 +112,12 @@ router.put('/update/:id', new Auth(UserType.ADMIN).auth, async ctx => {
     tagIds
   }
   const [err, article] = await ArticleDao.update(articleData)
+  const resData = {
+    ...article.dataValues,
+    isFavorited: article.isFavorited
+  }
   if (!err) {
-    ctx.body = new SuccessModel('更新成功', { ...article.dataValues, isFavorited: article.isFavorited })
+    ctx.body = new SuccessModel('更新成功', resData)
     ctx.status = 200
   } else {
     throw err
