@@ -25,8 +25,13 @@ router.post('/register', async ctx => {
     const [vErr, vAdmin] = await AdminDao.verify(email, password)
     if (!vErr) {
       const token = generateToken(vAdmin.id, UserType.ADMIN)
-      ctx.body = new SuccessModel('注册成功,已自动登录', { ...admin.dataValues, token })
-      ctx.status = 200
+      const [dErr, dAdmin] = await AdminDao.detail(admin.id, 1)
+      if (!dErr) {
+        ctx.body = new SuccessModel('登录成功', { ...dAdmin.dataValues, token })
+        ctx.status = 200
+      } else {
+        throw dErr
+      }
     } else {
       throw vErr
     }

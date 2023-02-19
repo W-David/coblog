@@ -66,6 +66,7 @@ class TagDao {
 
   static async list(query = {}) {
     try {
+      const scope = 'bh'
       const { name, pageNum, pageSize } = query
       const filter = {}
       if (name) {
@@ -82,7 +83,6 @@ class TagDao {
         condition.limit = +pageSize
         condition.offset = +((pageNum - 1) * pageSize)
       }
-      const scope = 'tb'
       const tags = await Tag.scope(scope).findAndCountAll(condition)
       return [null, tags]
     } catch (err) {
@@ -106,11 +106,11 @@ class TagDao {
         include: [
           {
             model: Article,
-            attributes: ['id', 'title', 'createdAt', 'created_at'],
+            attributes: ['id', 'title', 'createdAt'],
             through: { attributes: [] }
           }
         ],
-        order: [['created_at', 'DESC']],
+        order: [['createdAt', 'DESC']],
         distinct: true
       }
       if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {

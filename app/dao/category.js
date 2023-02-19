@@ -33,6 +33,7 @@ class CategoryDao {
 
   static async list(query = {}) {
     try {
+      const scope = 'bh'
       const { name, pageNum, pageSize } = query
       const filter = {}
       if (name) {
@@ -49,7 +50,6 @@ class CategoryDao {
         condition.limit = +pageSize
         condition.offset = +((pageNum - 1) * pageSize)
       }
-      const scope = 'tb'
       const categories = await Category.scope(scope).findAndCountAll(condition)
       return [null, categories]
     } catch (err) {
@@ -73,11 +73,11 @@ class CategoryDao {
         include: [
           {
             model: Article,
-            attributes: ['id', 'title', 'createdAt', 'created_at'],
+            attributes: ['id', 'title', 'createdAt'],
             through: { attributes: [] }
           }
         ],
-        order: [['created_at', 'DESC']],
+        order: [['createdAt', 'DESC']],
         distinct: true
       }
       if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {

@@ -7,7 +7,7 @@ class AdminDao {
   //创建管理用户
   static async create(data) {
     try {
-      const scope = 'bh'
+      const scope = 'np'
       const { email, password, nickname } = data
       const hasAdmin = await Admin.scope(scope).findOne({
         where: {
@@ -55,7 +55,7 @@ class AdminDao {
 
   //查询管理用户详情
   static async detail(id, status) {
-    const scope = 'bh'
+    const scope = 'np'
     const filter = {
       id,
       status
@@ -76,7 +76,7 @@ class AdminDao {
   //删除用户信息
   static async delete(id) {
     try {
-      const scope = 'bh'
+      const scope = 'np'
       const admin = await Admin.scope(scope).findByPk(id)
       if (!admin) {
         throw new global.errs.NotFound('未找到相关用户')
@@ -135,7 +135,7 @@ class AdminDao {
       const condition = {
         where: filter,
         order: [['created_at', 'DESC']],
-				distinct: true
+        distinct: true
       }
       //若存在页码参数，添加分页条件
       if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {

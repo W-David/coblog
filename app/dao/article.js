@@ -297,9 +297,9 @@ class ArticleDao {
         where: filter,
         include,
         attributes: {
-          exclude: ['content', 'deleted_at']
+          exclude: ['content', 'deleted_at', 'created_at', 'updated_at']
         },
-        order: [['created_at', 'DESC']],
+        order: [['createdAt', 'DESC']],
         distinct: true
       }
       if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {
@@ -352,9 +352,9 @@ class ArticleDao {
         where: filter,
         include,
         attributes: {
-          exclude: ['updated_at', 'deleted_at', 'content']
+          exclude: ['updated_at', 'deleted_at', 'created_at', 'content']
         },
-        order: [['created_at', 'DESC']],
+        order: [['createdAt', 'DESC']],
         distinct: true
       }
       if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {
@@ -372,6 +372,7 @@ class ArticleDao {
   static async listByFavo(body = {}) {
     try {
       const { pageSize } = body
+      const scope = 'bh'
       const favo = [sequelize.fn('COUNT', sequelize.col('FavoAdmins.id')), 'favoCount']
       const filter = {}
       const include = [
@@ -391,7 +392,7 @@ class ArticleDao {
       const condition = {
         where: filter,
         include,
-        attributes: ['id', 'title', 'description', favo],
+        attributes: ['id', 'title', 'description', 'updatedAt', 'createdAt', 'status', favo],
         group: ['id'],
         order: [[sequelize.literal('favoCount'), 'DESC']],
         distinct: true,
@@ -400,7 +401,7 @@ class ArticleDao {
       if (pageSize && isNumber(pageSize)) {
         condition.limit = +pageSize
       }
-      const articles = await Article.findAll(condition)
+      const articles = await Article.scope(scope).findAll(condition)
       return [null, articles]
     } catch (err) {
       return [err, null]
@@ -441,8 +442,8 @@ class ArticleDao {
       const condition = {
         where: filter,
         include,
-        attributes: ['id', 'title', 'description', 'browse', 'created_at', dateFormat],
-        order: [['created_at', 'DESC']],
+        attributes: ['id', 'title', 'description', 'browse', 'createdAt', dateFormat],
+        order: [['createdAt', 'DESC']],
         distinct: true
       }
       if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {

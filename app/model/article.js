@@ -35,6 +35,12 @@ const generateArticle = sequelize =>
       get() {
         return moment(this.getDataValue('created_at')).format('YYYY-MM-DD HH:mm:ss')
       }
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      get() {
+        return moment(this.getDataValue('updated_at')).format('YYYY-MM-DD HH:mm:ss')
+      }
     }
   })
 
