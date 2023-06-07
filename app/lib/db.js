@@ -25,12 +25,12 @@ const sequelize = new Sequelize(dbName, user, password, {
     scopes: {
       np: {
         attributes: {
-          exclude: ['updated_at', 'created_at', 'deleted_at', 'password', 'status']
+          exclude: ['deleted_at', 'password', 'status']
         }
       },
       bh: {
         attributes: {
-          exclude: ['updated_at', 'created_at', 'deleted_at']
+          exclude: ['deleted_at']
         }
       },
       iv: {

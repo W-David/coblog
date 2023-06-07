@@ -37,15 +37,15 @@ const generateAdmin = sequelize =>
       type: DataTypes.STRING(50),
       allowNull: false
     },
-    created_at: {
-      type: DataTypes.DATE,
+    createdAt: {
+      type: DataTypes.STRING,
       allowNull: false,
       get() {
         return moment(this.getDataValue('created_at')).format('YYYY-MM-DD HH:mm:ss')
       }
     },
     updatedAt: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING,
       get() {
         return moment(this.getDataValue('updated_at')).format('YYYY-MM-DD HH:mm:ss')
       }

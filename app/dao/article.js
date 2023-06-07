@@ -238,9 +238,9 @@ class ArticleDao {
     }
   }
 
-  static async list(body = {}) {
+  static async list(data = {}) {
     try {
-      const { id, title, pageNum, pageSize, adminId, categoryIds, tagIds } = body
+      const { id, title, pageNum, pageSize, adminId, categoryIds, tagIds } = data
       const hasCateCondition = categoryIds && isArray(categoryIds) && categoryIds.length
       const hasTagCondition = tagIds && isArray(tagIds) && tagIds.length
       const filter = {}
@@ -297,9 +297,9 @@ class ArticleDao {
         where: filter,
         include,
         attributes: {
-          exclude: ['content', 'deleted_at', 'created_at', 'updated_at']
+          exclude: ['content']
         },
-        order: [['createdAt', 'DESC']],
+        order: [['created_at', 'DESC']],
         distinct: true
       }
       if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {
@@ -335,9 +335,9 @@ class ArticleDao {
     }
   }
 
-  static async listByTime(body = {}) {
+  static async listByTime(data = {}) {
     try {
-      const { adminId, pageNum, pageSize } = body
+      const { adminId, pageSize } = data
       const filter = {}
       const include = [
         {
@@ -352,16 +352,15 @@ class ArticleDao {
         where: filter,
         include,
         attributes: {
-          exclude: ['updated_at', 'deleted_at', 'created_at', 'content']
+          exclude: ['deleted_at', 'content']
         },
-        order: [['createdAt', 'DESC']],
+        order: [['created_at', 'DESC']],
         distinct: true
       }
-      if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {
+      if (pageSize && isNumber(pageSize)) {
         condition.limit = +pageSize
-        condition.offset = +((pageNum - 1) * pageSize)
       }
-      const articles = await Article.findAndCountAll(condition)
+      const articles = await Article.findAll(condition)
       return [null, articles]
     } catch (err) {
       return [err, null]
@@ -369,9 +368,9 @@ class ArticleDao {
   }
 
   //此处不统计User的数据
-  static async listByFavo(body = {}) {
+  static async listByFavo(data = {}) {
     try {
-      const { pageSize } = body
+      const { adminId, pageSize } = data
       const scope = 'bh'
       const favo = [sequelize.fn('COUNT', sequelize.col('FavoAdmins.id')), 'favoCount']
       const filter = {}
@@ -389,10 +388,23 @@ class ArticleDao {
           attributes: [favo]
         }
       ]
+      if (adminId) {
+        filter.adminId = adminId
+      }
       const condition = {
         where: filter,
         include,
-        attributes: ['id', 'title', 'description', 'updatedAt', 'createdAt', 'status', favo],
+        attributes: [
+          'id',
+          'title',
+          'description',
+          'updated_at',
+          'created_at',
+          'updatedAt',
+          'createdAt',
+          'status',
+          favo
+        ],
         group: ['id'],
         order: [[sequelize.literal('favoCount'), 'DESC']],
         distinct: true,
@@ -442,7 +454,7 @@ class ArticleDao {
       const condition = {
         where: filter,
         include,
-        attributes: ['id', 'title', 'description', 'browse', 'createdAt', dateFormat],
+        attributes: ['id', 'title', 'description', 'browse', 'created_at', 'createdAt', dateFormat],
         order: [['createdAt', 'DESC']],
         distinct: true
       }

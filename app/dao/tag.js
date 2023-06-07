@@ -50,7 +50,7 @@ class TagDao {
         include: [
           {
             model: Article,
-            attributes: ['id', 'title', 'createdAt'],
+            attributes: ['id', 'title', 'created_at', 'createdAt'],
             through: { attributes: [] }
           }
         ]
@@ -106,11 +106,11 @@ class TagDao {
         include: [
           {
             model: Article,
-            attributes: ['id', 'title', 'createdAt'],
+            attributes: ['id', 'title', 'created_at', 'createdAt'],
             through: { attributes: [] }
           }
         ],
-        order: [['createdAt', 'DESC']],
+        order: [['created_at', 'DESC']],
         distinct: true
       }
       if (pageNum && isNumber(pageNum) && pageSize && isNumber(pageSize)) {

@@ -82,10 +82,10 @@ router.get('/list', async ctx => {
   }
 })
 
-router.post('/list/articles', async ctx => {
+router.get('/list/articles', async ctx => {
   const v = await new QueryTagValidator().validate(ctx)
-  const body = v.get('body')
-  const [err, tags] = await TagDao.queryListArticles(body)
+  const query = v.get('query')
+  const [err, tags] = await TagDao.queryListArticles(query)
   if (!err) {
     ctx.body = new SuccessModel('查询成功', tags)
     ctx.status = 200

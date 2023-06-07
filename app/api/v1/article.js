@@ -67,6 +67,7 @@ router.get('/detail/:id', new Auth(UserType.ADMIN).auth, async ctx => {
   const uid = +ctx.auth.uid
   const v = await new PositiveIdValidator().validate(ctx)
   const id = v.get('path.id')
+  const { noHtml = false } = v.get('query')
   const data = {
     uid,
     scope,
@@ -75,13 +76,19 @@ router.get('/detail/:id', new Auth(UserType.ADMIN).auth, async ctx => {
   const [err, article] = await ArticleDao.detail(data)
   const tocArray = await convToToc(article.content)
   const htmlContent = convToHTML(article.content)
-  const resData = {
-    ...article.dataValues,
-    tocArray,
-    htmlContent,
-    isFavorited: article.isFavorited,
-    favoritedNum: article.favoritedNum
-  }
+  const resData = !noHtml
+    ? {
+        ...article.dataValues,
+        tocArray,
+        htmlContent,
+        isFavorited: article.isFavorited,
+        favoritedNum: article.favoritedNum
+      }
+    : {
+        ...article.dataValues,
+        isFavorited: article.isFavorited,
+        favoritedNum: article.favoritedNum
+      }
   if (!err) {
     ctx.body = new SuccessModel('查询成功', resData)
     ctx.status = 200
@@ -124,7 +131,7 @@ router.put('/update/:id', new Auth(UserType.ADMIN).auth, async ctx => {
   }
 })
 
-router.put('/favorite/:id', new Auth(UserType.USER).auth, async ctx => {
+router.patch('/favorite/:id', new Auth(UserType.USER).auth, async ctx => {
   const scope = +ctx.auth.scope
   const uid = +ctx.auth.uid
   const v = await new LinValidator().validate(ctx)
@@ -143,57 +150,62 @@ router.put('/favorite/:id', new Auth(UserType.USER).auth, async ctx => {
   }
 })
 
-router.post('/list', async ctx => {
+router.get('/list', async ctx => {
   const v = await new QueryArticleValidator().validate(ctx)
-  const body = v.get('body')
-  const [err, articles] = await ArticleDao.list(body)
+  const query = v.get('query')
+  const [err, articles] = await ArticleDao.list(query)
   if (!err) {
     ctx.body = new SuccessModel('查询成功', articles)
+    ctx.status = 200
   } else {
     throw err
   }
 })
 
-router.post('/listByTime', async ctx => {
+router.get('/listByTime', async ctx => {
   const v = await new LinValidator().validate(ctx)
-  const body = v.get('body')
-  const [err, articles] = await ArticleDao.listByTime(body)
+  const query = v.get('query')
+  const [err, articles] = await ArticleDao.listByTime(query)
   if (!err) {
     ctx.body = new SuccessModel('查询成功', articles)
+    ctx.status = 200
   } else {
     throw err
   }
 })
 
-router.post('/listByFavo', async ctx => {
+router.get('/listByFavo', async ctx => {
   const v = await new LinValidator().validate(ctx)
-  const body = v.get('body')
-  const [err, articles] = await ArticleDao.listByFavo(body)
+  const query = v.get('query')
+  const [err, articles] = await ArticleDao.listByFavo(query)
   if (!err) {
     ctx.body = new SuccessModel('查询成功', articles)
+    ctx.status = 200
   } else {
     throw err
   }
 })
 
-router.post('/listArchive', new Auth(UserType.ADMIN).auth, async ctx => {
+router.get('/listArchive', new Auth(UserType.ADMIN).auth, async ctx => {
   const v = await new LinValidator().validate(ctx)
-  const body = v.get('body')
+  const query = v.get('query')
   const adminId = ctx.auth.uid
-  const [err, articles] = await ArticleDao.listArchive({ ...body, adminId })
+  const [err, articles] = await ArticleDao.listArchive({ ...query, adminId })
   if (!err) {
     ctx.body = new SuccessModel('已生成时间线文章列表', articles)
+    ctx.status = 200
   } else {
     throw err
   }
 })
 
-router.post('/listByTimeAll', async ctx => {
+router.get('/listByTimeAll', async ctx => {
   const v = await new LinValidator().validate(ctx)
-  const body = v.get('body')
-  const [err, articles] = await ArticleDao.listByTime(body)
+  const query = v.get('query')
+  const [err, articles] = await ArticleDao.listByTime(query)
   if (!err) {
     ctx.body = new SuccessModel('查询成功', articles)
+    ctx.status = 200
   } else {
     throw err
   }

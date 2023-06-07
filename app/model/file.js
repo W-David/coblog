@@ -23,13 +23,13 @@ const generateFile = (name, sequelize) =>
       type: DataTypes.INTEGER(16)
     },
     createdAt: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING,
       get() {
         return moment(this.getDataValue('created_at')).format('YYYY-MM-DD HH:mm:ss')
       }
     },
     updatedAt: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING,
       get() {
         return moment(this.getDataValue('updated_at')).format('YYYY-MM-DD HH:mm:ss')
       }

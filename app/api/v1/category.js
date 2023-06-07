@@ -81,10 +81,10 @@ router.get('/list', async ctx => {
   }
 })
 
-router.post('/list/articles', async ctx => {
+router.get('/list/articles', async ctx => {
   const v = await new QueryCategoryValidator().validate(ctx)
-  const body = v.get('body')
-  const [err, categories] = await CategoryDao.queryListArticles(body)
+  const query = v.get('query')
+  const [err, categories] = await CategoryDao.queryListArticles(query)
   if (!err) {
     ctx.body = new SuccessModel('查询成功', categories)
     ctx.status = 200
