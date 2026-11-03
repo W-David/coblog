@@ -6,6 +6,30 @@
 配套前端：[W-David/coblog-vite](https://github.com/W-David/coblog-vite)  
 评论服务：[W-David/coblog-waline](https://github.com/W-David/coblog-waline)（部署在 Vercel）
 
+## 三仓架构（勿合并成 monorepo）
+
+```
+浏览器
+  │
+  ├─ coblog-vite          前端 SPA（Vue3 + Vite）
+  │     │
+  │     ├─ VITE_APP_BASE_URL ──► coblog          本仓 API  :8990  /api/v1
+  │     │                         MySQL + JWT + OSS
+  │     │
+  │     └─ VITE_APP_WALINE_API ► coblog-waline   Vercel Waline
+  │                               LeanCloud 存评论
+  │
+  └─ https://coblog.fun
+```
+
+| 仓库 | 职责 | 运行 / 部署 |
+|------|------|-------------|
+| [coblog](https://github.com/W-David/coblog) | 博客后端 API | 自建机，默认 **:8990** |
+| [coblog-vite](https://github.com/W-David/coblog-vite) | 博客前端 | 静态站 / 现网 coblog.fun |
+| [coblog-waline](https://github.com/W-David/coblog-waline) | 评论 | **Vercel**（如 `coblog-waline.vercel.app`） |
+
+旧前端 [coblog-frontend](https://github.com/W-David/coblog-frontend) 已废弃，由 coblog-vite 取代。
+
 ## 角色
 
 - 提供 `/api/v1`：文章、分类、标签、用户/管理员、搜索、上传、阿里云 OSS 等
@@ -50,13 +74,3 @@ yarn log
 | MySQL | 见 `config` 中 `database` |
 | JWT `security.secretKey` | 生产务必换成强随机值 |
 | `ssl/` | 生产证书目录，已在 `.gitignore`，勿提交 |
-
-## 仓库关系（勿合并）
-
-```
-coblog-vite  (前端 SPA)
-    |  API
-coblog       (本仓，后端)
-    |
-coblog-waline (评论，独立部署)
-```
