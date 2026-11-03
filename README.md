@@ -4,13 +4,22 @@
 
 线上站点：[https://coblog.fun](https://coblog.fun)  
 配套前端：[W-David/coblog-vite](https://github.com/W-David/coblog-vite)  
-评论服务：[W-David/coblog-waline](https://github.com/W-David/coblog-waline)（Vercel Waline；本仓 `waline/`、`waline_server/` 为历史自建方案遗留）
+评论服务：[W-David/coblog-waline](https://github.com/W-David/coblog-waline)（部署在 Vercel）
 
 ## 角色
 
 - 提供 `/api/v1`：文章、分类、标签、用户/管理员、搜索、上传、阿里云 OSS 等
 - 默认监听 **8990**（开发 HTTP；生产可走 HTTPS，见 `app.js`）
 - 前端通过 `VITE_APP_BASE_URL`（如 `https://coblog.fun:8990/api/v1`）调用本服务
+
+## 遗留目录（请勿再用于生产）
+
+| 目录 | 说明 |
+|------|------|
+| `waline/` | 早期自建 Waline 配套残留 |
+| `waline_server/` | 早期自建 Waline 服务端（含 Docker）残留 |
+
+线上评论已迁至独立仓库 [coblog-waline](https://github.com/W-David/coblog-waline)（Vercel）。本轮仅标注遗留，**暂不删除**这两个目录，以免误伤本地历史脚本或未迁移数据。
 
 ## 本地运行
 
