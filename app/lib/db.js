@@ -92,11 +92,26 @@ User.belongsToMany(Article, {
 const initMode = {}
 // const initMode = { force: true }
 // const initMode = { alter: true}
-sequelize.sync(initMode).then(async () => {
-  const hasAdmin = await Admin.findOne({ where: { email: admin.email, deleted_at: null } })
-  if (hasAdmin) return
-  await Admin.create(admin)
-})
+sequelize
+  .sync(initMode)
+  .then(async () => {
+    const hasAdmin = await Admin.findOne({ where: { email: admin.email, deleted_at: null } })
+    if (hasAdmin) {
+      console.log('Admin already exists, skip seed')
+      return
+    }
+    await Admin.create({
+      email: admin.email,
+      password: admin.password,
+      nickname: admin.nickname || 'admin',
+      // model defines createdAt as STRING (maps to created_at with underscored)
+      createdAt: String(admin.created_at || Date.now())
+    })
+    console.log('Seeded default admin:', admin.email)
+  })
+  .catch(err => {
+    console.error('DB sync/seed failed (API still running):', err.message || err)
+  })
 
 sequelize
   .authenticate()
